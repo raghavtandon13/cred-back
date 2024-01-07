@@ -1,0 +1,171 @@
+{
+	"info": {
+		"_postman_id": "944f0d60-d16f-44f4-9fe4-2ab2551c6c77",
+		"name": "Partners",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27093976"
+	},
+	"item": [
+		{
+			"name": "fetches micro loan partner details ",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer jhvuegdbohdo3jpwsjpwohjspnej3dnrdho4ndoednedk"
+					}
+				],
+				"url": {
+					"raw": "20.219.22.190/api/v1/partner/micro-loan",
+					"host": [
+						"20",
+						"219",
+						"22",
+						"190"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partner",
+						"micro-loan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetches pay later partner details ",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer jhvuegdbohdo3jpwsjpwohjspnej3dnrdho4ndoednedk"
+					}
+				],
+				"url": {
+					"raw": "20.219.22.190/api/v1/partner/pay-later",
+					"host": [
+						"20",
+						"219",
+						"22",
+						"190"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partner",
+						"pay-later"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetches personal loan partner details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer jhvuegdbohdo3jpwsjpwohjspnej3dnrdho4ndoednedk"
+					}
+				],
+				"url": {
+					"raw": "20.219.22.190/api/v1/partner/personal-loan",
+					"host": [
+						"20",
+						"219",
+						"22",
+						"190"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partner",
+						"personal-loan"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetches credit card partner details",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer jhvuegdbohdo3jpwsjpwohjspnej3dnrdho4ndoednedk"
+					}
+				],
+				"url": {
+					"raw": "20.219.22.190/api/v1/partner/credit-card",
+					"host": [
+						"20",
+						"219",
+						"22",
+						"190"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partner",
+						"credit-card"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "fetches partner details ",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer jhvuegdbohdo3jpwsjpwohjspnej3dnrdho4ndoednedk"
+					}
+				],
+				"url": {
+					"raw": "20.219.22.190/api/v1/partner/search/6454f41248d4cd8739ec9802",
+					"host": [
+						"20",
+						"219",
+						"22",
+						"190"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partner",
+						"search",
+						"6454f41248d4cd8739ec9802"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
