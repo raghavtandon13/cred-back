@@ -1,11 +1,6 @@
 const User = require("../models/user.model");
 
-const {
-  PHONE_NOT_FOUND_ERR,
-  PHONE_ALREADY_EXISTS_ERR,
-  USER_NOT_FOUND_ERR,
-  INCORRECT_OTP_ERR,
-} = require("../errors");
+const { PHONE_NOT_FOUND_ERR, PHONE_ALREADY_EXISTS_ERR, USER_NOT_FOUND_ERR, INCORRECT_OTP_ERR } = require("../errors");
 
 // set expiration time for otp
 const EXPIRATION_TIME = 5 * 60 * 1000;
