@@ -1,10 +1,7 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const User = require("./models/user.model");
 
-const {
-  GOOGLE_AUTH_CLIENT_ID,
-  GOOGLE_AUTH_CLIENT_SECRET,
-} = require("./config");
+const { GOOGLE_AUTH_CLIENT_ID, GOOGLE_AUTH_CLIENT_SECRET } = require("./config");
 
 module.exports = (passport) => {
   passport.use(
