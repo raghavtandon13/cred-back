@@ -1,4 +1,3 @@
-
 exports.API_ENDPOINT_NOT_FOUND_ERR = "Api endpoint does not found";
 
 exports.SERVER_ERR = "Something went wrong";
