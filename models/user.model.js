@@ -14,10 +14,10 @@ const userSchema = new Schema(
       // unique: true,
     },
 
-    role :{
-     type : String,
-     enum:["ADMIN","USER"],
-     default:"USER",
+    role: {
+      type: String,
+      enum: ["ADMIN", "USER"],
+      default: "USER",
     },
 
     pan: {
@@ -82,18 +82,18 @@ const userSchema = new Schema(
       trim: true,
     },
 
-    phoneOtp:{
-        type:String,
-        length:4,
+    phoneOtp: {
+      type: String,
+      length: 4,
     },
 
-    phoneOtpExpire:{
-        type:Date,
+    phoneOtpExpire: {
+      type: Date,
     },
 
-    detailsFilled:{
-        type:Boolean,
-        default:false,
+    detailsFilled: {
+      type: Boolean,
+      default: false,
     },
     google: {
       id: {

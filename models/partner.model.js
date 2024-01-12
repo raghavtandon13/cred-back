@@ -18,7 +18,7 @@ const partnerSchema = new Schema(
     logo: {
       type: String,
       required: true,
-    }
+    },
   },
   { timestamps: true }
 );
