@@ -1,10 +1,6 @@
-let collection = []
-const fs = require('fs');
-const {
-  TWILIO_AUTH_TOKEN,
-  TWILIO_ACCOUNT_SID,
-  TWILIO_PHONE,
-} = require("../config");
+let collection = [];
+const fs = require("fs");
+const { TWILIO_AUTH_TOKEN, TWILIO_ACCOUNT_SID, TWILIO_PHONE } = require("../config");
 const { SERVER_ERR } = require("../errors");
 const fast2sms = require("fast-two-sms");
 var unirest = require("unirest");
@@ -21,8 +17,7 @@ exports.generateOTP = (otp_length) => {
       OTP += digits[Math.floor(Math.random() * 10)];
     }
   }
-  
-  
+
   return OTP;
   //let OTP2 = parseInt(OTP)
   //return OTP2;
@@ -53,7 +48,7 @@ exports.fast2sms = async (otp, contactNumber) => {
   var unirest = require("unirest");
 
   var req = unirest("GET", "https://www.fast2sms.com/dev/bulkV2");
-  console.log(typeof(otp))
+  console.log(typeof otp);
 
   req.query({
     authorization: "mSqeyUGhtg2i3dnFzk6x8JfXo4YAaw0ENLsPHRBWlQbKZOvCuIHgAPkimoq09z7sGnT5wjMId1t6XEL3",
@@ -68,9 +63,9 @@ exports.fast2sms = async (otp, contactNumber) => {
   });
 
   req.end(function (res) {
-    if (res.error) //throw res.error
+    if (res.error)
+      //throw res.error
 
-    console.log(res.body);
+      console.log(res.body);
   });
-  
 };
