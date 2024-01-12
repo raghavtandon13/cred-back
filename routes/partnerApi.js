@@ -52,8 +52,11 @@ router.post("/test", async (req, res) => {
 // FIBE API------FIBE API------FIBE API------FIBE API------FIBE API------FIBE API//
 //-------------------------------------------------------------------------------//
 
-const fibeUrl = "https://uatapi.earlysalary.com/token/esapi/generateTokenNew";
-const profileIngestionUrl = "https://uatapi.earlysalary.com/espiqa/profile-ingestion";
+// const fibeUrl = "https://uatapi.earlysalary.com/token/esapi/generateTokenNew";
+// const profileIngestionUrl = "https://uatapi.earlysalary.com/espiqa/profile-ingestion";
+const fibeUrl = "https://api.socialworth.in/aggext-prod/esapi/generateTokenNew";
+const profileIngestionUrl = "https://api.socialworth.in/aggext-prod/esapi/profile-ingestion";
+const customerFetchStatus = "https://api.socialworth.in/aggext-prod/esapi/fetchcuststatus";
 
 router.post("/fibe", async (req, res) => {
   try {
@@ -62,12 +65,17 @@ router.post("/fibe", async (req, res) => {
     console.log(requestData);
 
     const response1 = await axios.post(fibeUrl, {
-      username: "CredmantraUat",
-      password: "CredmantraUat@UAT#27112023",
+      // username: "CredmantraUat",
+      // password: "CredmantraUat@UAT#27112023",
+      // applicationName: "APP",
+      // Prod keys only on server
+      username: "CredMANTRAPrOd",
+      password: "CredManTraPrOd@05012024!",
       applicationName: "APP",
     });
 
     const token = response1.data.token;
+    console.log("this is token : ", token);
 
     const response2 = await axios.post(profileIngestionUrl, requestData, {
       headers: {
@@ -558,14 +566,15 @@ router.post("/lendingkart/documents", async (req, res) => {
 router.post("/faircent/dedupe", async (req, res) => {
   try {
     const data = req.body;
-    const fResponse = await axios.post("/v1/api/duplicateCheck", data, {
+    console.log("Dedupe Data Recieved:", data);
+    const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/duplicateCheck", data, {
       headers: {
-        "x-application-id": "",
-        "x-application-name": "",
+        "x-application-id": "credmantra",
+        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse);
+    console.log(fResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -574,32 +583,40 @@ router.post("/faircent/dedupe", async (req, res) => {
 router.post("/faircent/register", async (req, res) => {
   try {
     const data = req.body;
-    const fResponse = await axios.post("/v1/api/aggregrator/register/user", data, {
+    const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/aggregrator/register/user", data, {
       headers: {
-        "x-application-id": "",
-        "x-application-name": "",
+        "x-application-id": "credmantra",
+        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse);
+    console.log(fResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+router.get("/faircent/upload", upload.single("file"), async (req, res) => {
+  res.status(200).json({
+    type: "success",
+    message: "partnerapi service is running",
+  });
+});
 router.post("/faircent/upload", async (req, res) => {
   try {
     const { token } = req.body;
     const data = req.body;
+
     const fResponse = await axios.post("/v1/api/uploadprocess", data, {
       headers: {
-        "x-application-id": "",
-        "x-application-name": "",
+        "x-application-id": "credmantra",
+        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
         "x-access-token": token,
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse);
+    console.log(fResponse.data);
+    res.status(200).json({ wow: "done" });
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
