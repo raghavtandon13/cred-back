@@ -301,8 +301,8 @@ router.post("/upwards", async (req, res) => {
   try {
     const { pan, social_email_id, ...otherData } = req.body;
 
-    const affiliatedUserId = "your_user_id";
-    const affiliatedUserSecret = "your_user_secret";
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
     const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
@@ -569,8 +569,8 @@ router.post("/faircent/dedupe", async (req, res) => {
     console.log("Dedupe Data Recieved:", data);
     const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/duplicateCheck", data, {
       headers: {
-        "x-application-id": "credmantra",
-        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
+        "x-application-name": "credmantra",
+        "x-application-id": "eaebf2c8c9a3a16201d6bc31f619b6b1",
       },
     });
     res.json(fResponse.data);
@@ -583,10 +583,11 @@ router.post("/faircent/dedupe", async (req, res) => {
 router.post("/faircent/register", async (req, res) => {
   try {
     const data = req.body;
+    console.log("main data", data);
     const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/aggregrator/register/user", data, {
       headers: {
-        "x-application-id": "credmantra",
-        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
+        "x-application-name": "credmantra",
+        "x-application-id": "eaebf2c8c9a3a16201d6bc31f619b6b1",
       },
     });
     res.json(fResponse.data);
@@ -609,8 +610,8 @@ router.post("/faircent/upload", async (req, res) => {
 
     const fResponse = await axios.post("/v1/api/uploadprocess", data, {
       headers: {
-        "x-application-id": "credmantra",
-        "x-application-name": "eaebf2c8c9a3a16201d6bc31f619b6b1",
+        "x-application-name": "credmantra",
+        "x-application-id": "eaebf2c8c9a3a16201d6bc31f619b6b1",
         "x-access-token": token,
       },
     });
