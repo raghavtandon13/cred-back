@@ -297,10 +297,52 @@ router.get("/lendingkart-status/:applicationId", async (req, res) => {
 //--------------------------------------------------------------------------------//
 
 // Define the route for affiliate user authentication
-router.post("/upwards", async (req, res) => {
+router.post("/upwards/eligibility", async (req, res) => {
+  // console.log(req.body.data);
   try {
-    const { pan, social_email_id, ...otherData } = req.body;
+    // const { pan, social_email_id } = req.body;
 
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
+
+    // if (response.data && response.data.affiliated_user_session_token) {
+    console.log("token generated");
+    const affiliated_user_session_token = response.data.affiliated_user_session_token;
+
+    // Store the token
+    const headers = {
+      "Affiliated-User-Id": affiliatedUserId,
+      "Affiliated-User-Session-Token": affiliated_user_session_token,
+    };
+    console.log("headers:", headers);
+
+    // Request Data
+    // const loanEligibilityRequest = {
+    //   pan: pan,
+    //   social_email_id: social_email_id,
+    // };
+    const loanEligibilityRequest = req.body;
+    console.log(loanEligibilityRequest);
+    const eligibilityResponse = await axios.post("https://uat1.upwards.in/af/v1/customer/loan/eligibility/", loanEligibilityRequest, {
+      headers,
+    });
+    console.log(eligibilityResponse.data);
+    res.json(eligibilityResponse.data);
+    // } else {
+    //   res.json({ error: "Failed to authenticate" });
+    // }
+  } catch (error) {
+    //console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+router.post("/upwards/create", async (req, res) => {
+  try {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
@@ -312,37 +354,56 @@ router.post("/upwards", async (req, res) => {
     if (response.data && response.data.affiliated_user_session_token) {
       const affiliated_user_session_token = response.data.affiliated_user_session_token;
 
-      // Store the token for use in subsequent requests
+      // Store the token
       const headers = {
         "Affiliated-User-Id": affiliatedUserId,
         "Affiliated-User-Session-Token": affiliated_user_session_token,
       };
 
-      // Modify this part to include the pan and social_email_id
-      const loanEligibilityRequest = {
-        pan: pan,
-        social_email_id: social_email_id,
-      };
+      // Request Data
+      const loanDataRequest = req.body;
 
-      const eligibilityResponse = await axios.post("https://uat1.upwards.in/af/v1/customer/loan/eligibility/", loanEligibilityRequest, {
+      const loanDataResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data", loanDataRequest, {
         headers,
       });
-
-      if (eligibilityResponse.data && eligibilityResponse.data.is_eligible === true) {
-        // Proceed to post data to the next endpoint
-        const loanDataRequest = req.body; // Assuming you want to send the entire request body
-
-        const loanDataResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data", loanDataRequest, {
-          headers,
-        });
-
-        // Handle the response from the data posting if needed
-        res.status(200).json({ message: "Data posted successfully" });
-      } else {
-        res.status(403).json({ message: "You are not eligible for a loan" });
-      }
+      res.json(loanDataResponse.data);
     } else {
-      res.status(400).json({ error: "Invalid response from the API" });
+      res.json({ error: "Failed to authenticate" });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+router.post("/upwards/transition", async (req, res) => {
+  //NOTE: req.body should only contain customer_id and loan_id
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
+
+    if (response.data && response.data.affiliated_user_session_token) {
+      const affiliated_user_session_token = response.data.affiliated_user_session_token;
+
+      // Store the token
+      const headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token": affiliated_user_session_token,
+      };
+
+      // Request Data
+      const transitionRequest = req.body;
+
+      const transitionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/transition_data/", transitionRequest, {
+        headers,
+      });
+      res.json(transitionResponse.data);
+    } else {
+      res.json({ error: "Failed to authenticate" });
     }
   } catch (error) {
     console.error("Error:", error);
