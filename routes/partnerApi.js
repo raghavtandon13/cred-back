@@ -337,26 +337,22 @@ router.post("/upwards/create", async (req, res) => {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
-
-    if (response.data && response.data.affiliated_user_session_token) {
-      const affiliated_user_session_token = response.data.affiliated_user_session_token;
-
-      // Store the token
-      const headers = {
+    let headers = {};
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
+      headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token": affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
-
-      // Request Data
-      const loanDataRequest = req.body;
-
-      const loanDataResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data", loanDataRequest, {
-        headers,
-      });
-      res.json(loanDataResponse.data);
     } else {
-      res.json({ error: "Failed to authenticate" });
+      console.error("affiliated_user_session_token not found in the response data.");
     }
+
+    const loanDataRequest = req.body;
+
+    const loanDataResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data/create/", loanDataRequest, {
+      headers,
+    });
+    res.json(loanDataResponse.data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "An error occurred" });
