@@ -298,10 +298,7 @@ router.get("/lendingkart-status/:applicationId", async (req, res) => {
 
 // Define the route for affiliate user authentication
 router.post("/upwards/eligibility", async (req, res) => {
-  // console.log(req.body.data);
   try {
-    // const { pan, social_email_id } = req.body;
-
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
@@ -309,35 +306,25 @@ router.post("/upwards/eligibility", async (req, res) => {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
+    let headers = {};
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error("affiliated_user_session_token not found in the response data.");
+    }
 
-    // if (response.data && response.data.affiliated_user_session_token) {
-    console.log("token generated");
-    const affiliated_user_session_token = response.data.affiliated_user_session_token;
-
-    // Store the token
-    const headers = {
-      "Affiliated-User-Id": affiliatedUserId,
-      "Affiliated-User-Session-Token": affiliated_user_session_token,
-    };
-    console.log("headers:", headers);
-
-    // Request Data
-    // const loanEligibilityRequest = {
-    //   pan: pan,
-    //   social_email_id: social_email_id,
-    // };
     const loanEligibilityRequest = req.body;
-    console.log(loanEligibilityRequest);
+    console.log("eli req:", loanEligibilityRequest);
     const eligibilityResponse = await axios.post("https://uat1.upwards.in/af/v1/customer/loan/eligibility/", loanEligibilityRequest, {
       headers,
     });
-    console.log(eligibilityResponse.data);
+    console.log("eli res:", eligibilityResponse.data);
     res.json(eligibilityResponse.data);
-    // } else {
-    //   res.json({ error: "Failed to authenticate" });
-    // }
   } catch (error) {
-    //console.error("Error:", error);
+    console.error("Error:", error);
     res.status(500).json({ error: "An error occurred" });
   }
 });
