@@ -17,19 +17,19 @@
       "tab.border": "#424242",
       "editor.background": "#181818"
     },
-    "titleBar.activeBackground": "#617c08",
-    "titleBar.activeForeground": "#000000",
-    "titleBar.inactiveBackground": "#617c08",
-    "titleBar.inactiveForeground": "#000000",
-    "titleBar.border": "#617c08",
-    "activityBar.background": "#617c08",
-    "activityBar.foreground": "#000000",
-    "statusBar.background": "#617c08",
-    "statusBar.foreground": "#000000",
-    "statusBar.debuggingBackground": "#617c08",
-    "statusBar.debuggingForeground": "#000000",
-    "tab.activeBorder": "#617c08",
-    "iLoveWorkSpaceColors": true,
-    "iLoveWorkSpaceRandom": false
+    // "titleBar.activeBackground": "#617c08",
+    // "titleBar.activeForeground": "#000000",
+    // "titleBar.inactiveBackground": "#617c08",
+    // "titleBar.inactiveForeground": "#000000",
+    // "titleBar.border": "#617c08",
+    // "activityBar.background": "#617c08",
+    // "activityBar.foreground": "#000000",
+    // "statusBar.background": "#617c08",
+    // "statusBar.foreground": "#000000",
+    // "statusBar.debuggingBackground": "#617c08",
+    // "statusBar.debuggingForeground": "#000000",
+    // "tab.activeBorder": "#617c08",
+    // "iLoveWorkSpaceColors": true,
+    // "iLoveWorkSpaceRandom": false
   }
 }

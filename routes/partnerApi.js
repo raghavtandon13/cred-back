@@ -221,76 +221,6 @@ router.post("/moneywide", async (req, res) => {
 });
 //#endregion
 
-//#region LENDINGKART
-//--------------------------------------------------------------------------------//
-// LendingKart API------LendingKart API------LendingKart API------LendingKart API //
-// leadExists===false
-//--------------------------------------------------------------------------------//
-const LK_Key = "your_api_key_here";
-
-// Define the base URL for Lendingkart API
-const lendingkartBaseUrl = "https://api.lendingkart.com/v2/partner/leads";
-
-router.post("/lendingkart", async (req, res) => {
-  // Extract mobile and email from the request body
-  const { mobile, email, ...otherData } = req.body;
-
-  // Step 1: Check if the user exists
-  try {
-    const existsResponse = await axios.post(
-      `${lendingkartBaseUrl}/lead-exists-status`,
-      { mobile, email },
-      {
-        headers: { "X-Api-Key": LK_Key },
-      }
-    );
-
-    if (existsResponse.data === false) {
-      // Step 2: User doesn't exist, proceed to create a new application
-      try {
-        const createResponse = await axios.post(
-          `${lendingkartBaseUrl}/create-application`,
-          { mobile, email, ...otherData },
-          {
-            headers: { "X-Api-Key": LK_Key },
-          }
-        );
-
-        // Assuming Lendingkart responds with some confirmation data
-        res.json({
-          message: "Application created successfully",
-          data: createResponse.data,
-        });
-      } catch (error) {
-        console.error("Error creating application:", error);
-        res.status(500).json({ error: "Failed to create application" });
-      }
-    } else {
-      // User already exists
-      res.status(400).json({ error: "User already exists" });
-    }
-  } catch (error) {
-    console.error("Error checking user existence:", error);
-    res.status(500).json({ error: "Failed to check user existence" });
-  }
-});
-
-router.get("/lendingkart-status/:applicationId", async (req, res) => {
-  const { applicationId } = req.params;
-
-  try {
-    const response = await axios.get(`${lendingkartBaseUrl}/applicationStatus/${applicationId}`, {
-      headers: { "X-Api-Key": apiKey },
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error("Error checking application status:", error);
-    res.status(500).json({ error: "Failed to check application status" });
-  }
-});
-//#endregion
-
 //#region UPWARDS
 //--------------------------------------------------------------------------------//
 // UPWARDS--------UPWARDS API-------UPWARDS API------UPWARDS API------UPWARDS API //
@@ -369,27 +299,26 @@ router.post("/upwards/transition", async (req, res) => {
       affiliated_user_secret: affiliatedUserSecret,
     });
 
-    if (response.data && response.data.affiliated_user_session_token) {
-      const affiliated_user_session_token = response.data.affiliated_user_session_token;
-
-      // Store the token
-      const headers = {
+    let headers = {};
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
+      headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token": affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
-
-      // Request Data
-      const transitionRequest = req.body;
-
-      const transitionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/transition_data/", transitionRequest, {
-        headers,
-      });
-      res.json(transitionResponse.data);
     } else {
-      res.json({ error: "Failed to authenticate" });
+      console.error("affiliated_user_session_token not found in the response data.");
     }
+
+    // Request Data
+    const transitionRequest = req.body;
+    console.log("trans req:", transitionRequest);
+
+    const transitionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/transition_data/", transitionRequest, {
+      headers,
+    });
+    res.json(transitionResponse.data);
   } catch (error) {
-    console.error("Error:", error);
+    //console.error("Error:", error);
     res.status(500).json({ error: "An error occurred" });
   }
 });
@@ -555,11 +484,12 @@ router.post("/finzy/echeck", async (req, res) => {
 //----------------------------------------------------------------------------------------------//
 router.post("/lendingkart/lead-exists-status", async (req, res) => {
   try {
+    console.log("Recieved: ", req.body);
     data = req.body;
     const lkResponse = await axios.post("https://api.lendingkart.com/v2/partner/leads/lead-exists-status", data, {
       headers: {
         "Content-Type": "application/json",
-        "X-Api-Key": "aaaa-bbbb-cccc-dddd",
+        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
       },
     });
     res.json(lkResponse.data);
