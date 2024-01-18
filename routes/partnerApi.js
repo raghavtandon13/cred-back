@@ -288,6 +288,74 @@ router.post("/upwards/create", async (req, res) => {
     res.status(500).json({ error: "An error occurred" });
   }
 });
+router.post("/upwards/complete", async (req, res) => {
+  //NOTE: req.body should only contain customer_id and loan_id
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
+
+    let headers = {};
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error("affiliated_user_session_token not found in the response data.");
+    }
+
+    // Request Data
+    const completeRequest = req.body;
+    console.log("trans req:", completeRequest);
+
+    const completeResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data/complete/", completeRequest, {
+      headers,
+    });
+    res.json(completeResponse.data);
+  } catch (error) {
+    //console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+router.post("/upwards/decision", async (req, res) => {
+  //NOTE: req.body should only contain customer_id and loan_id
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
+
+    let headers = {};
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error("affiliated_user_session_token not found in the response data.");
+    }
+
+    // Request Data
+    const decisionRequest = req.body;
+    console.log("trans req:", decisionRequest);
+
+    const decisionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/credit_programs/decision/", decisionRequest, {
+      headers,
+    });
+    res.json(decisionResponse.data);
+  } catch (error) {
+    //console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
 router.post("/upwards/transition", async (req, res) => {
   //NOTE: req.body should only contain customer_id and loan_id
   try {
@@ -336,7 +404,6 @@ function generateCheckSum(data, secretKey) {
   console.log(checkSumValue);
   return checkSumValue;
 }
-
 router.post("/cashe/checkDuplicateLead", async (req, res) => {
   try {
     // const data = req.body;
@@ -452,7 +519,6 @@ router.post("/cashe/upload", upload.single("file"), async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 //#endregion
 
 //#region FINZY
@@ -518,7 +584,23 @@ router.post("/lendingkart/create-application", async (req, res) => {
 router.post("/lendingkart/documents", async (req, res) => {
   try {
     data = req.body;
-    const lkResponse = await axios.post("https://api.lendingkart.com/​v2/partner/leads/documents/{applicationId}/{documentType}", data, {
+    const lkResponse = await axios.post(`https://api.lendingkart.com/v2/partner/leads/documents/${applicationId}/${documentType}`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": "aaaa-bbbb-cccc-dddd",
+      },
+    });
+    res.json(lkResponse.data);
+    console.log(lkResponse);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+router.post("/lendingkart/magiclink", async (req, res) => {
+  try {
+    const { applicationId } = req.body;
+    const lkResponse = await axios.get(`https://api.lendingkart.com/v2/partner/leads/magic-link/${applicationId}`, {
       headers: {
         "Content-Type": "application/json",
         "X-Api-Key": "aaaa-bbbb-cccc-dddd",
@@ -571,13 +653,7 @@ router.post("/faircent/register", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.get("/faircent/upload", upload.single("file"), async (req, res) => {
-  res.status(200).json({
-    type: "success",
-    message: "partnerapi service is running",
-  });
-});
-router.post("/faircent/upload", async (req, res) => {
+router.post("/faircent/upload", upload.single("file"), async (req, res) => {
   try {
     const { token } = req.body;
     const data = req.body;
@@ -600,4 +676,66 @@ router.post("/faircent/upload", async (req, res) => {
 
 //#endregion FAIRCENT
 
+//#region MONEYVIEW
+//----------------------------------------------------------------------------------------------//
+// MONEYVIEW----MONEYVIEW-------MONEYVIEW------MONEYVIEW-----MONEYVIEW----MONEYVIEW //
+//----------------------------------------------------------------------------------------------//
+const getToken = async () => {
+  const tokenResponse = await axios.post("https://uat-atlas.whizdm.com/atlas/v1/token", {
+    partnerCode: g_partnercode,
+    userName: "g_username",
+    password: "g_password",
+  });
+
+  return tokenResponse.data.token;
+};
+router.post("/moneyview/create", async (req, res) => {
+  try {
+    const data = req.body;
+    const token = await getToken();
+    const response = await axios.post("https://uat-atlas.whizdm.com/atlas/v1/lead", data, {
+      headers: {
+        token: token,
+      },
+    });
+    res.json(response.data);
+    console.log(response);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+router.post("/moneyview/offers", async (req, res) => {
+  try {
+    const { leadId } = req.body;
+    const token = await getToken();
+    const response = await axios.get(`https://uat-atlas.whizdm.com/atlas/v1/offers/${leadId}`, {
+      headers: {
+        token: token,
+      },
+    });
+    res.json(response.data);
+    console.log(response);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+router.post("/moneyview/status", async (req, res) => {
+  try {
+    const { leadId } = req.body;
+    const token = await getToken();
+    const response = await axios.get(`https://uat-atlas.whizdm.com/atlas/v1/lead/status/${leadId}`, {
+      headers: {
+        token: token,
+      },
+    });
+    res.json(response.data);
+    console.log(response);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+//#endregion MONEYVIEW
 module.exports = router;
