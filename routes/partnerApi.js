@@ -682,9 +682,9 @@ router.post("/faircent/upload", upload.single("file"), async (req, res) => {
 //----------------------------------------------------------------------------------------------//
 const getToken = async () => {
   const tokenResponse = await axios.post("https://uat-atlas.whizdm.com/atlas/v1/token", {
-    partnerCode: g_partnercode,
-    userName: "g_username",
-    password: "g_password",
+    partnerCode: 159,
+    userName: "credmantra",
+    password: "\"'Z5dJL4kq",
   });
 
   return tokenResponse.data.token;
@@ -738,4 +738,5 @@ router.post("/moneyview/status", async (req, res) => {
   }
 });
 //#endregion MONEYVIEW
+
 module.exports = router;
