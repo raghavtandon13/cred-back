@@ -552,7 +552,7 @@ router.post("/lendingkart/lead-exists-status", async (req, res) => {
   try {
     console.log("Recieved: ", req.body);
     data = req.body;
-    const lkResponse = await axios.post("https://api.lendingkart.com/v2/partner/leads/lead-exists-status", data, {
+    const lkResponse = await axios.post("https://lkext.lendingkart.com/admin/lead/v2/partner/leads/lead-exists-status", data, {
       headers: {
         "Content-Type": "application/json",
         "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
