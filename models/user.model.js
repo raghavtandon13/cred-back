@@ -13,6 +13,11 @@ const userSchema = new Schema(
       trim: true,
       // unique: true,
     },
+    accounts: [
+      {
+        type: Schema.Types.Mixed,
+      },
+    ],
 
     role: {
       type: String,
@@ -107,7 +112,7 @@ const userSchema = new Schema(
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = model("User", userSchema);

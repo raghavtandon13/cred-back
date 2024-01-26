@@ -8,6 +8,11 @@ const fs = require("fs");
 const upload = multer();
 const CryptoJS = require("crypto-js");
 const _ = require("lodash");
+
+// testing with USERT model
+
+const User = require("../models/user.model");
+
 //#endregion
 
 //#region TEST
@@ -61,21 +66,30 @@ const customerFetchStatus = "https://api.socialworth.in/aggext-prod/esapi/fetchc
 router.post("/fibe", async (req, res) => {
   try {
     const requestData = req.body;
-    // const { mobilenumber } = req.body;
+    const { mobilenumber } = req.body;
+
+    const user = await User.findOne({ phone: mobilenumber });
     //console.log(requestData);
 
     const response1 = await axios.post(fibeUrl, {
-      // username: "CredmantraUat",
-      // password: "CredmantraUat@UAT#27112023",
-      // applicationName: "APP",
-      // Prod keys only on server
-      username: "CredMANTRAPrOd",
-      password: "CredManTraPrOd@05012024!",
+      username: "CredmantraUat",
+      password: "CredmantraUat@UAT#27112023",
       applicationName: "APP",
+      //
+      /////////// Prod keys only on server
+      //
+      //username: "CredMANTRAPrOd",
+      //password: "CredManTraPrOd@05012024!",
+      //applicationName: "APP",
+      //
+      //
+      // Random Keys
+      //username: "frfrfrre",
+      //password: "efemfkm",
+      //applicationName: "APP",
     });
 
     const token = response1.data.token;
-    //console.log("this is token : ", token);
 
     const response2 = await axios.post(profileIngestionUrl, requestData, {
       headers: {
@@ -84,9 +98,17 @@ router.post("/fibe", async (req, res) => {
     });
 
     const responseData = response2.data;
-    //console.log(responseData);
+    user.accounts.push({
+      fibe: {
+        sent: requestData,
+        res: responseData,
+      },
+    });
+
+    await user.save();
 
     res.status(200).json(responseData);
+    console.log("whole user data: ", user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred" });
@@ -207,7 +229,7 @@ router.post("/moneywide", async (req, res) => {
             "API-CLIENT": "MWide",
             "API-KEY": authToken,
           },
-        }
+        },
       );
 
       res.json(losApiResponse.data);

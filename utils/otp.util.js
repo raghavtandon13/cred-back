@@ -44,7 +44,7 @@ exports.generateOTP = (otp_length) => {
 // }
 
 exports.fast2sms = async (otp, contactNumber) => {
-  // //console.log("fast2sms started");
+  console.log("fast2sms started");
   var unirest = require("unirest");
 
   var req = unirest("GET", "https://www.fast2sms.com/dev/bulkV2");
@@ -62,10 +62,10 @@ exports.fast2sms = async (otp, contactNumber) => {
     "cache-control": "no-cache",
   });
 
-  // req.end(function (res) {
-  //   if (res.error)
-  //     //throw res.error
+  req.end(function (res) {
+    if (res.error)
+      throw res.error
 
-  //     console.log(res.body);
-  // });
+      console.log(res.body);
+  });
 };
