@@ -62,7 +62,7 @@ exports.createNewUser = async (req, res, next) => {
 
     // generate otp
     const otp = generateOTP(OTP_LENGTH);
-    console.log(otp);
+    console.log("OTP:", otp);
     // save otp to user collection
     user.phoneOtp = otp;
     user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
@@ -85,21 +85,21 @@ exports.createNewUser = async (req, res, next) => {
 
 // ---------------------- get auth for any user ------------------------
 exports.get_auth = async (req, res, next) => {
-  //console.log(req.body);
+  ////console.log(req.body);
   try {
     const { phone } = req.body;
-    console.log(phone);
+    console.log("Phone: ", phone);
 
     const user = await User.findOne({ phone });
-    console.log("new user");
+    ////console.log("new user");
     if (!user) {
-      console.log("user not found creating new");
+      ////console.log("user not found creating new");
       // create new user
       await this.createNewUser(req, res, next);
     } else {
-      console.log("user found login with otp");
+      // //console.log("user found login with otp");
       // login user
-      // console.log(req.body);
+      // //console.log(req.body);
       await this.loginWithPhoneOtp(req, res, next);
     }
   } catch (error) {
@@ -133,10 +133,11 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
       return;
     }
 
-    // console.log(req.body);
+    // //console.log(req.body);
 
     // generate otp
     const otp = generateOTP(OTP_LENGTH);
+    console.log("OTP:", otp);
     // save otp to user collection
     user.phoneOtp = otp;
     user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
@@ -154,7 +155,7 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
     user.income = income;
     user.credit_required = credit_required;
     user.company_name = company_name;
-    console.log(user);
+    //console.log(user);
     await user.save();
     // send otp to phone number
     contactNumber = user.phone;
@@ -172,7 +173,7 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
       )
     );
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     next({ message: error.message, status: 500 });
   }
 };
@@ -217,7 +218,7 @@ exports.verifyPhoneOtp = async (req, res, next) => {
     const { phone, otp } = req.body;
 
     const user = await User.findOne({ phone });
-    console.log(user, phone, otp);
+    //console.log(user, phone, otp);
     if (!user) {
       next({ status: 400, message: USER_NOT_FOUND_ERR });
       return;
@@ -242,7 +243,7 @@ exports.verifyPhoneOtp = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     next({ message: error.message, status: 500 });
   }
 };

@@ -35,20 +35,20 @@ exports.generateOTP = (otp_length) => {
 //     })
 //     .then(
 //       (message) => {
-//         console.log(message.sid);
-//         //console.log("opt sent");
+//         //console.log(message.sid);
+//         ////console.log("opt sent");
 //         return message.sid;
 //       },
-//       (error) => console.log({ status: 500, message: error})
+//       (error) => //console.log({ status: 500, message: error})
 //     );
 // }
 
 exports.fast2sms = async (otp, contactNumber) => {
-  console.log("fast2sms started");
+  // //console.log("fast2sms started");
   var unirest = require("unirest");
 
   var req = unirest("GET", "https://www.fast2sms.com/dev/bulkV2");
-  console.log(typeof otp);
+  // //console.log(typeof otp);
 
   req.query({
     authorization: "mSqeyUGhtg2i3dnFzk6x8JfXo4YAaw0ENLsPHRBWlQbKZOvCuIHgAPkimoq09z7sGnT5wjMId1t6XEL3",
@@ -62,10 +62,10 @@ exports.fast2sms = async (otp, contactNumber) => {
     "cache-control": "no-cache",
   });
 
-  req.end(function (res) {
-    if (res.error)
-      //throw res.error
+  // req.end(function (res) {
+  //   if (res.error)
+  //     //throw res.error
 
-      console.log(res.body);
-  });
+  //     console.log(res.body);
+  // });
 };

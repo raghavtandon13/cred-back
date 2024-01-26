@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-///console.log("auth started")
+/////console.log("auth started")
 
 const checkAuth = require("../middlewares/checkAuth");
 const checkAdmin = require("../middlewares/checkAdmin");

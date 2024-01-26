@@ -25,7 +25,7 @@ router.post("/emi", (req, res) => {
     return res.status(400).json({ message: "Please provide all three numbers" });
   }
   const iR = R / 12;
-  console.log(iR);
+  //console.log(iR);
   const denominator = Math.pow(1 + iR * 0.01, N) - 1;
   const EMI = (P * iR * 0.01 * Math.pow(1 + iR * 0.01, N)) / denominator;
 
@@ -35,13 +35,13 @@ router.post("/emi", (req, res) => {
 
 router.get("/search/:id", checkAuth, async function (req, res, next) {
   try {
-    console.log("searching by id");
+    //console.log("searching by id");
     const partnerId = req.params.id;
     // const partner = await Partner.findById(partnerId);
     const partner = await Partner.find({ name: partnerId });
 
     if (!partner) {
-      console.log("not found");
+      //console.log("not found");
       throw new Error("Partner not found");
     }
 

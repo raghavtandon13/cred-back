@@ -20,7 +20,7 @@ module.exports = (passport) => {
             return done(null, existingUser);
           }
 
-          console.log("Creating new user...");
+          //console.log("Creating new user...");
           const newUser = new User({
             method: "google",
             google: {

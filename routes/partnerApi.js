@@ -23,7 +23,7 @@ router.get("/", function (req, res, next) {
 
 router.post("/test", async (req, res) => {
   try {
-    console.log(req.body);
+    //console.log(req.body);
     const sendthis = {
       mobilenumber: "8983657823",
       status: "Rejected",
@@ -62,7 +62,7 @@ router.post("/fibe", async (req, res) => {
   try {
     const requestData = req.body;
     // const { mobilenumber } = req.body;
-    console.log(requestData);
+    //console.log(requestData);
 
     const response1 = await axios.post(fibeUrl, {
       // username: "CredmantraUat",
@@ -75,7 +75,7 @@ router.post("/fibe", async (req, res) => {
     });
 
     const token = response1.data.token;
-    console.log("this is token : ", token);
+    //console.log("this is token : ", token);
 
     const response2 = await axios.post(profileIngestionUrl, requestData, {
       headers: {
@@ -84,7 +84,7 @@ router.post("/fibe", async (req, res) => {
     });
 
     const responseData = response2.data;
-    console.log(responseData);
+    //console.log(responseData);
 
     res.status(200).json(responseData);
   } catch (error) {
@@ -247,11 +247,11 @@ router.post("/upwards/eligibility", async (req, res) => {
     }
 
     const loanEligibilityRequest = req.body;
-    console.log("eli req:", loanEligibilityRequest);
+    //console.log("eli req:", loanEligibilityRequest);
     const eligibilityResponse = await axios.post("https://uat1.upwards.in/af/v1/customer/loan/eligibility/", loanEligibilityRequest, {
       headers,
     });
-    console.log("eli res:", eligibilityResponse.data);
+    //console.log("eli res:", eligibilityResponse.data);
     res.json(eligibilityResponse.data);
   } catch (error) {
     console.error("Error:", error);
@@ -311,7 +311,7 @@ router.post("/upwards/complete", async (req, res) => {
 
     // Request Data
     const completeRequest = req.body;
-    console.log("trans req:", completeRequest);
+    //console.log("trans req:", completeRequest);
 
     const completeResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/data/complete/", completeRequest, {
       headers,
@@ -345,7 +345,7 @@ router.post("/upwards/decision", async (req, res) => {
 
     // Request Data
     const decisionRequest = req.body;
-    console.log("trans req:", decisionRequest);
+    //console.log("trans req:", decisionRequest);
 
     const decisionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/credit_programs/decision/", decisionRequest, {
       headers,
@@ -379,7 +379,7 @@ router.post("/upwards/transition", async (req, res) => {
 
     // Request Data
     const transitionRequest = req.body;
-    console.log("trans req:", transitionRequest);
+    //console.log("trans req:", transitionRequest);
 
     const transitionResponse = await axios.post("https://uat1.upwards.in/af/v2/customer/loan/transition_data/", transitionRequest, {
       headers,
@@ -401,7 +401,7 @@ function generateCheckSum(data, secretKey) {
   const dataStr = JSON.stringify(data);
   const encryptedStr = CryptoJS.HmacSHA1(dataStr, secretKey);
   const checkSumValue = CryptoJS.enc.Base64.stringify(encryptedStr);
-  console.log(checkSumValue);
+  //console.log(checkSumValue);
   return checkSumValue;
 }
 router.post("/cashe/checkDuplicateLead", async (req, res) => {
@@ -414,7 +414,7 @@ router.post("/cashe/checkDuplicateLead", async (req, res) => {
       partner_name: partner_name,
     };
 
-    console.log(data);
+    //console.log(data);
     const c1 = generateCheckSum(data, "_bz_q]o2T,#(wM`D");
     const casheResponse = await axios.post("https://test-partners.cashe.co.in/partner/checkDuplicateCustomerLead", data, {
       headers: {
@@ -423,7 +423,7 @@ router.post("/cashe/checkDuplicateLead", async (req, res) => {
       },
     });
     res.json(casheResponse.data);
-    console.log(casheResponse);
+    //console.log(casheResponse);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -431,7 +431,7 @@ router.post("/cashe/checkDuplicateLead", async (req, res) => {
 });
 router.post("/cashe/preApproval", async (req, res) => {
   try {
-    console.log("Recieved: ", req.body);
+    //console.log("Recieved: ", req.body);
     const c2 = generateCheckSum(req.body, "_bz_q]o2T,#(wM`D");
     const casheDetails = await axios.post("https://test-partners.cashe.co.in/report/getLoanApprovalDetails", req.body, {
       headers: {
@@ -439,7 +439,7 @@ router.post("/cashe/preApproval", async (req, res) => {
         "Check-Sum": c2,
       },
     });
-    console.log(casheDetails.data);
+    //console.log(casheDetails.data);
     res.json(casheDetails.data);
   } catch (error) {
     console.error("Error:", error.message);
@@ -550,7 +550,7 @@ router.post("/finzy/echeck", async (req, res) => {
 //----------------------------------------------------------------------------------------------//
 router.post("/lendingkart/lead-exists-status", async (req, res) => {
   try {
-    console.log("Recieved: ", req.body);
+    //console.log("Recieved: ", req.body);
     data = req.body;
     const lkResponse = await axios.post("https://lkext.lendingkart.com/admin/lead/v2/partner/leads/lead-exists-status", data, {
       headers: {
@@ -559,7 +559,7 @@ router.post("/lendingkart/lead-exists-status", async (req, res) => {
       },
     });
     res.json(lkResponse.data);
-    console.log(lkResponse);
+    //console.log(lkResponse);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -575,7 +575,7 @@ router.post("/lendingkart/create-application", async (req, res) => {
       },
     });
     res.json(lkResponse.data);
-    console.log(lkResponse);
+    //console.log(lkResponse);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -591,7 +591,7 @@ router.post("/lendingkart/documents", async (req, res) => {
       },
     });
     res.json(lkResponse.data);
-    console.log(lkResponse);
+    //console.log(lkResponse);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -607,7 +607,7 @@ router.post("/lendingkart/magiclink", async (req, res) => {
       },
     });
     res.json(lkResponse.data);
-    console.log(lkResponse);
+    //console.log(lkResponse);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -622,7 +622,7 @@ router.post("/lendingkart/magiclink", async (req, res) => {
 router.post("/faircent/dedupe", async (req, res) => {
   try {
     const data = req.body;
-    console.log("Dedupe Data Recieved:", data);
+    //console.log("Dedupe Data Recieved:", data);
     const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/duplicateCheck", data, {
       headers: {
         "x-application-name": "credmantra",
@@ -630,7 +630,7 @@ router.post("/faircent/dedupe", async (req, res) => {
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse.data);
+    //console.log(fResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -639,7 +639,7 @@ router.post("/faircent/dedupe", async (req, res) => {
 router.post("/faircent/register", async (req, res) => {
   try {
     const data = req.body;
-    console.log("main data", data);
+    //console.log("main data", data);
     const fResponse = await axios.post("https://fcnode5.faircent.com/v1/api/aggregrator/register/user", data, {
       headers: {
         "x-application-name": "credmantra",
@@ -647,7 +647,7 @@ router.post("/faircent/register", async (req, res) => {
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse.data);
+    //console.log(fResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -666,7 +666,7 @@ router.post("/faircent/upload", upload.single("file"), async (req, res) => {
       },
     });
     res.json(fResponse.data);
-    console.log(fResponse.data);
+    //console.log(fResponse.data);
     res.status(200).json({ wow: "done" });
   } catch (error) {
     console.error("Error:", error.message);
@@ -699,7 +699,7 @@ router.post("/moneyview/create", async (req, res) => {
       },
     });
     res.json(response.data);
-    console.log(response);
+    //console.log(response);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -715,7 +715,7 @@ router.post("/moneyview/offers", async (req, res) => {
       },
     });
     res.json(response.data);
-    console.log(response);
+    //console.log(response);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
@@ -731,7 +731,7 @@ router.post("/moneyview/status", async (req, res) => {
       },
     });
     res.json(response.data);
-    console.log(response);
+    //console.log(response);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
