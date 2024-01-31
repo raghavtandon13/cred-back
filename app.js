@@ -2,7 +2,7 @@ require("dotenv").config();
 
 var createError = require("http-errors");
 var express = require("express");
-var path = require("path");
+// var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var mongoose = require("mongoose");
@@ -48,7 +48,7 @@ app.use(cors(corsOptionsDelegate));
 // view engine setup
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use("/api" + API_VERSION + "/logos", express.static("logos"));
 
@@ -90,7 +90,7 @@ async function main() {
       },
       (err) => {
         console.log(err);
-      }
+      },
     );
   } catch (error) {
     console.log(error);

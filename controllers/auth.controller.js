@@ -169,8 +169,8 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
           data: {
             userId: user._id,
           },
-        })
-      )
+        }),
+      ),
     );
   } catch (error) {
     //console.log(error);
