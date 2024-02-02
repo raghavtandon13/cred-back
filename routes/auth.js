@@ -1,11 +1,15 @@
 var express = require("express");
 var router = express.Router();
 
-/////console.log("auth started")
-
 const checkAuth = require("../middlewares/checkAuth");
 const checkAdmin = require("../middlewares/checkAdmin");
-const { fetchCurrentUser, resendOtp, get_auth, verifyPhoneOtp, handleAdmin } = require("../controllers/auth.controller");
+const {
+  fetchCurrentUser,
+  resendOtp,
+  get_auth,
+  verifyPhoneOtp,
+  handleAdmin,
+} = require("../controllers/auth.controller");
 
 router.get("/", function (req, res, next) {
   res.status(200).json({
