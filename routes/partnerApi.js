@@ -10,13 +10,13 @@ const path = require("node:path");
 const multer = require("multer");
 const casheRouter = require("./partnerRoutes/casheRouter");
 const faircentRouter = require("./partnerRoutes/faircentRouter");
-const upwardsRouter = require("./partnerRoutes/upwardsRouter");
+// const upwardsRouter = require("./partnerRoutes/upwardsRouter");
 const fibeRouter = require("./partnerRoutes/fibeRouter");
 
 // ROUTES
 router.use("/faircent", faircentRouter);
 router.use("/cashe", casheRouter);
-router.use("/upwards", upwardsRouter);
+// router.use("/upwards", upwardsRouter);
 router.use("/fibe", fibeRouter);
 
 // TEST ROUTE
@@ -227,233 +227,233 @@ router.post("/moneywide", async (req, res) => {
 // UPWARDS--------UPWARDS API-------UPWARDS API------UPWARDS API------UPWARDS API------------- //
 //---------------------------------------------------------------------------------------------//
 
-// // Define the route for affiliate user authentication
-// router.post("/upwards/eligibility", async (req, res) => {
-//   try {
-//     const affiliatedUserId = 73;
-//     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-//
-//     const response = await axios.post(
-//       "https://uat1.upwards.in/af/v1/authenticate/",
-//       {
-//         affiliated_user_id: affiliatedUserId,
-//         affiliated_user_secret: affiliatedUserSecret,
-//       },
-//     );
-//     let headers = {};
-//     if (
-//       response.data &&
-//       response.data.data &&
-//       response.data.data.affiliated_user_session_token
-//     ) {
-//       headers = {
-//         "Affiliated-User-Id": affiliatedUserId,
-//         "Affiliated-User-Session-Token":
-//           response.data.data.affiliated_user_session_token,
-//       };
-//     } else {
-//       console.error(
-//         "affiliated_user_session_token not found in the response data.",
-//       );
-//     }
-//
-//     const loanEligibilityRequest = req.body;
-//     const eligibilityResponse = await axios.post(
-//       "https://uat1.upwards.in/af/v1/customer/loan/eligibility/",
-//       loanEligibilityRequest,
-//       {
-//         headers,
-//       },
-//     );
-//     res.json(eligibilityResponse.data);
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
-// router.post("/upwards/create", async (req, res) => {
-//   try {
-//     const affiliatedUserId = 73;
-//     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-//
-//     const response = await axios.post(
-//       "https://uat1.upwards.in/af/v1/authenticate/",
-//       {
-//         affiliated_user_id: affiliatedUserId,
-//         affiliated_user_secret: affiliatedUserSecret,
-//       },
-//     );
-//     let headers = {};
-//     if (
-//       response.data &&
-//       response.data.data &&
-//       response.data.data.affiliated_user_session_token
-//     ) {
-//       headers = {
-//         "Affiliated-User-Id": affiliatedUserId,
-//         "Affiliated-User-Session-Token":
-//           response.data.data.affiliated_user_session_token,
-//       };
-//     } else {
-//       console.error(
-//         "affiliated_user_session_token not found in the response data.",
-//       );
-//     }
-//
-//     const loanDataRequest = req.body;
-//
-//     const loanDataResponse = await axios.post(
-//       "https://uat1.upwards.in/af/v2/customer/loan/data/create/",
-//       loanDataRequest,
-//       {
-//         headers,
-//       },
-//     );
-//     res.json(loanDataResponse.data);
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
-// //NOTE: req.body should only contain customer_id and loan_id
-// router.post("/upwards/complete", async (req, res) => {
-//   try {
-//     const affiliatedUserId = 73;
-//     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-//
-//     const response = await axios.post(
-//       "https://uat1.upwards.in/af/v1/authenticate/",
-//       {
-//         affiliated_user_id: affiliatedUserId,
-//         affiliated_user_secret: affiliatedUserSecret,
-//       },
-//     );
-//
-//     let headers = {};
-//     if (
-//       response.data &&
-//       response.data.data &&
-//       response.data.data.affiliated_user_session_token
-//     ) {
-//       headers = {
-//         "Affiliated-User-Id": affiliatedUserId,
-//         "Affiliated-User-Session-Token":
-//           response.data.data.affiliated_user_session_token,
-//       };
-//     } else {
-//       console.error(
-//         "affiliated_user_session_token not found in the response data.",
-//       );
-//     }
-//
-//     const completeRequest = req.body;
-//
-//     const completeResponse = await axios.post(
-//       "https://uat1.upwards.in/af/v2/customer/loan/data/complete/",
-//       completeRequest,
-//       {
-//         headers,
-//       },
-//     );
-//     res.json(completeResponse.data);
-//   } catch (error) {
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
-// //NOTE: req.body should only contain customer_id and loan_id
-// router.post("/upwards/decision", async (req, res) => {
-//   try {
-//     const affiliatedUserId = 73;
-//     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-//
-//     const response = await axios.post(
-//       "https://uat1.upwards.in/af/v1/authenticate/",
-//       {
-//         affiliated_user_id: affiliatedUserId,
-//         affiliated_user_secret: affiliatedUserSecret,
-//       },
-//     );
-//
-//     let headers = {};
-//     if (
-//       response.data &&
-//       response.data.data &&
-//       response.data.data.affiliated_user_session_token
-//     ) {
-//       headers = {
-//         "Affiliated-User-Id": affiliatedUserId,
-//         "Affiliated-User-Session-Token":
-//           response.data.data.affiliated_user_session_token,
-//       };
-//     } else {
-//       console.error(
-//         "affiliated_user_session_token not found in the response data.",
-//       );
-//     }
-//
-//     const decisionRequest = req.body;
-//
-//     const decisionResponse = await axios.post(
-//       "https://uat1.upwards.in/af/v2/customer/loan/credit_programs/decision/",
-//       decisionRequest,
-//       {
-//         headers,
-//       },
-//     );
-//     res.json(decisionResponse.data);
-//   } catch (error) {
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
-// //NOTE: req.body should only contain customer_id and loan_id
-// router.post("/upwards/transition", async (req, res) => {
-//   try {
-//     const affiliatedUserId = 73;
-//     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-//
-//     const response = await axios.post(
-//       "https://uat1.upwards.in/af/v1/authenticate/",
-//       {
-//         affiliated_user_id: affiliatedUserId,
-//         affiliated_user_secret: affiliatedUserSecret,
-//       },
-//     );
-//
-//     let headers = {};
-//     if (
-//       response.data &&
-//       response.data.data &&
-//       response.data.data.affiliated_user_session_token
-//     ) {
-//       headers = {
-//         "Affiliated-User-Id": affiliatedUserId,
-//         "Affiliated-User-Session-Token":
-//           response.data.data.affiliated_user_session_token,
-//       };
-//     } else {
-//       console.error(
-//         "affiliated_user_session_token not found in the response data.",
-//       );
-//     }
-//
-//     const transitionRequest = req.body;
-//
-//     const transitionResponse = await axios.post(
-//       "https://uat1.upwards.in/af/v2/customer/loan/transition_data/",
-//       transitionRequest,
-//       {
-//         headers,
-//       },
-//     );
-//     res.json(transitionResponse.data);
-//   } catch (error) {
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
+// Define the route for affiliate user authentication
+router.post("/upwards/eligibility", async (req, res) => {
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-//---------------------------------------------------------------------------------------------//
+    const response = await axios.post(
+      "https://uat1.upwards.in/af/v1/authenticate/",
+      {
+        affiliated_user_id: affiliatedUserId,
+        affiliated_user_secret: affiliatedUserSecret,
+      },
+    );
+    let headers = {};
+    if (
+      response.data &&
+      response.data.data &&
+      response.data.data.affiliated_user_session_token
+    ) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token":
+          response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error(
+        "affiliated_user_session_token not found in the response data.",
+      );
+    }
+
+    const loanEligibilityRequest = req.body;
+    const eligibilityResponse = await axios.post(
+      "https://uat1.upwards.in/af/v1/customer/loan/eligibility/",
+      loanEligibilityRequest,
+      {
+        headers,
+      },
+    );
+    res.json(eligibilityResponse.data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+router.post("/upwards/create", async (req, res) => {
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post(
+      "https://uat1.upwards.in/af/v1/authenticate/",
+      {
+        affiliated_user_id: affiliatedUserId,
+        affiliated_user_secret: affiliatedUserSecret,
+      },
+    );
+    let headers = {};
+    if (
+      response.data &&
+      response.data.data &&
+      response.data.data.affiliated_user_session_token
+    ) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token":
+          response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error(
+        "affiliated_user_session_token not found in the response data.",
+      );
+    }
+
+    const loanDataRequest = req.body;
+
+    const loanDataResponse = await axios.post(
+      "https://uat1.upwards.in/af/v2/customer/loan/data/create/",
+      loanDataRequest,
+      {
+        headers,
+      },
+    );
+    res.json(loanDataResponse.data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+//NOTE: req.body should only contain customer_id and loan_id
+router.post("/upwards/complete", async (req, res) => {
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post(
+      "https://uat1.upwards.in/af/v1/authenticate/",
+      {
+        affiliated_user_id: affiliatedUserId,
+        affiliated_user_secret: affiliatedUserSecret,
+      },
+    );
+
+    let headers = {};
+    if (
+      response.data &&
+      response.data.data &&
+      response.data.data.affiliated_user_session_token
+    ) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token":
+          response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error(
+        "affiliated_user_session_token not found in the response data.",
+      );
+    }
+
+    const completeRequest = req.body;
+
+    const completeResponse = await axios.post(
+      "https://uat1.upwards.in/af/v2/customer/loan/data/complete/",
+      completeRequest,
+      {
+        headers,
+      },
+    );
+    res.json(completeResponse.data);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+//NOTE: req.body should only contain customer_id and loan_id
+router.post("/upwards/decision", async (req, res) => {
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post(
+      "https://uat1.upwards.in/af/v1/authenticate/",
+      {
+        affiliated_user_id: affiliatedUserId,
+        affiliated_user_secret: affiliatedUserSecret,
+      },
+    );
+
+    let headers = {};
+    if (
+      response.data &&
+      response.data.data &&
+      response.data.data.affiliated_user_session_token
+    ) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token":
+          response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error(
+        "affiliated_user_session_token not found in the response data.",
+      );
+    }
+
+    const decisionRequest = req.body;
+
+    const decisionResponse = await axios.post(
+      "https://uat1.upwards.in/af/v2/customer/loan/credit_programs/decision/",
+      decisionRequest,
+      {
+        headers,
+      },
+    );
+    res.json(decisionResponse.data);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+//NOTE: req.body should only contain customer_id and loan_id
+router.post("/upwards/transition", async (req, res) => {
+  try {
+    const affiliatedUserId = 73;
+    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+
+    const response = await axios.post(
+      "https://uat1.upwards.in/af/v1/authenticate/",
+      {
+        affiliated_user_id: affiliatedUserId,
+        affiliated_user_secret: affiliatedUserSecret,
+      },
+    );
+
+    let headers = {};
+    if (
+      response.data &&
+      response.data.data &&
+      response.data.data.affiliated_user_session_token
+    ) {
+      headers = {
+        "Affiliated-User-Id": affiliatedUserId,
+        "Affiliated-User-Session-Token":
+          response.data.data.affiliated_user_session_token,
+      };
+    } else {
+      console.error(
+        "affiliated_user_session_token not found in the response data.",
+      );
+    }
+
+    const transitionRequest = req.body;
+
+    const transitionResponse = await axios.post(
+      "https://uat1.upwards.in/af/v2/customer/loan/transition_data/",
+      transitionRequest,
+      {
+        headers,
+      },
+    );
+    res.json(transitionResponse.data);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+// ---------------------------------------------------------------------------------------------//
 // CASHE--------CASHE API-------CASHE API------CASHE API------CASHE API--CASHE API-------------//
-//---------------------------------------------------------------------------------------------//
+// ---------------------------------------------------------------------------------------------//
 
 // function generateCheckSum(data, secretKey) {
 //   const dataStr = JSON.stringify(data);
@@ -464,12 +464,12 @@ router.post("/moneywide", async (req, res) => {
 // router.post("/cashe/checkDuplicateLead", async (req, res) => {
 //   try {
 //     const { mobile_no, partner_name } = req.body;
-//
+
 //     data = {
 //       mobile_no: mobile_no,
 //       partner_name: partner_name,
 //     };
-//
+
 //     const c1 = generateCheckSum(data, "_bz_q]o2T,#(wM`D");
 //     const casheResponse = await axios.post(
 //       "https://test-partners.cashe.co.in/partner/checkDuplicateCustomerLead",
@@ -569,15 +569,15 @@ router.post("/moneywide", async (req, res) => {
 //     const partnerName = req.body.partner_name;
 //     const partnerCustomerId = req.body.partner_customer_id;
 //     const fileType = req.body.file_type;
-//
+
 //     const formData = new FormData();
 //     formData.append("file", file.buffer, { filename: file.originalname });
 //     formData.append("partner_name", partnerName);
 //     formData.append("partner_customer_id", partnerCustomerId);
 //     formData.append("file_type", fileType);
-//
+
 //     const c6 = generateCheckSum(formData, "_bz_q]o2T,#(wM`D");
-//
+
 //     const casheUploadResponse = await axios.post(
 //       "https://test-partners.cashe.co.in/partner/document/upload",
 //       formData,
@@ -589,7 +589,7 @@ router.post("/moneywide", async (req, res) => {
 //         },
 //       },
 //     );
-//
+
 //     res.json(casheUploadResponse.data);
 //   } catch (error) {
 //     console.error("Error:", error.message);

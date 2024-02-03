@@ -7,6 +7,13 @@ var axios = require("axios");
 // UPWARDS--------UPWARDS API-------UPWARDS API------UPWARDS API------UPWARDS API //
 //--------------------------------------------------------------------------------//
 
+router.get("/", function (res) {
+  res.status(200).json({
+    type: "success",
+    message: "upwards service is running",
+  });
+});
+
 router.post("/eligibility", async (req, res) => {
   try {
     const affiliatedUserId = 73;

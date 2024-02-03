@@ -2,7 +2,7 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
-const User = require("../models/user.model");
+const User = require("../../models/user.model");
 
 //-------------------------------------------------------------------------------//
 // FIBE API------FIBE API------FIBE API------FIBE API------FIBE API------FIBE API//
