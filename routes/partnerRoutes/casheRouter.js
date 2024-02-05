@@ -9,10 +9,10 @@ const FormData = require("form-data");
 
 // Multer
 const storage = multer.diskStorage({
-  destination: function (cb) {
+  destination: function (_req, _file, cb) {
     cb(null, "uploads/");
   },
-  filename: function (file, cb) {
+  filename: function (_req, file, cb) {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
@@ -119,13 +119,16 @@ router.post("/status", async (req, res) => {
 });
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const file = req.file;
     const partnerName = req.body.partner_name;
     const partnerCustomerId = req.body.partner_customer_id;
     const fileType = req.body.file_type;
 
+    const filePath = req.file.path;
+    console.log(("hey:", req.file.path));
+    const fileStream = fs.createReadStream(filePath);
+
     const formData = new FormData();
-    formData.append("file", file.buffer, { filename: file.originalname });
+    formData.append("file", fileStream);
     formData.append("partner_name", partnerName);
     formData.append("partner_customer_id", partnerCustomerId);
     formData.append("file_type", fileType);
@@ -142,7 +145,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
         },
       },
     );
-
     res.json(casheUploadResponse.data);
   } catch (error) {
     console.error("Error:", error.message);

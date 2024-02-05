@@ -33,7 +33,12 @@ router.post("/", async (req, res) => {
     const requestData = req.body;
     const { mobilenumber } = req.body;
 
-    const user = await User.findOne({ phone: mobilenumber });
+    let user;
+    try {
+      user = await User.findOne({ phone: mobilenumber });
+    } catch (mongoError) {
+      console.error("MongoDB error:", mongoError);
+    }
 
     const response1 = await axios.post(fibeUrl, {
       username: "CredmantraUat",
@@ -63,7 +68,22 @@ router.post("/", async (req, res) => {
       },
     });
 
-    await user.save();
+    try {
+      if (user) {
+        user.accounts.push({
+          fibe: {
+            sent: requestData,
+            res: responseData,
+          },
+        });
+        await user.save();
+        console.log("User data saved successfully.");
+      } else {
+        console.log("User not found. Skipping saving to user.");
+      }
+    } catch (mongoError) {
+      console.error("MongoDB error:", mongoError);
+    }
 
     res.status(200).json(responseData);
     console.log("whole user data: ", user);

@@ -3,11 +3,12 @@ var express = require("express");
 var router = express.Router();
 var crypto = require("crypto");
 var axios = require("axios");
-const CryptoJS = require("crypto-js");
-const User = require("../models/user.model");
-const FormData = require("form-data");
-const path = require("node:path");
-const multer = require("multer");
+const fs = require("fs");
+// const CryptoJS = require("crypto-js");
+// const User = require("../models/user.model");
+// const FormData = require("form-data");
+// const path = require("node:path");
+// const multer = require("multer");
 const casheRouter = require("./partnerRoutes/casheRouter");
 const faircentRouter = require("./partnerRoutes/faircentRouter");
 // const upwardsRouter = require("./partnerRoutes/upwardsRouter");
@@ -233,28 +234,18 @@ router.post("/upwards/eligibility", async (req, res) => {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-    const response = await axios.post(
-      "https://uat1.upwards.in/af/v1/authenticate/",
-      {
-        affiliated_user_id: affiliatedUserId,
-        affiliated_user_secret: affiliatedUserSecret,
-      },
-    );
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
     let headers = {};
-    if (
-      response.data &&
-      response.data.data &&
-      response.data.data.affiliated_user_session_token
-    ) {
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
       headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token":
-          response.data.data.affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
     } else {
-      console.error(
-        "affiliated_user_session_token not found in the response data.",
-      );
+      console.error("affiliated_user_session_token not found in the response data.");
     }
 
     const loanEligibilityRequest = req.body;
@@ -276,28 +267,18 @@ router.post("/upwards/create", async (req, res) => {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-    const response = await axios.post(
-      "https://uat1.upwards.in/af/v1/authenticate/",
-      {
-        affiliated_user_id: affiliatedUserId,
-        affiliated_user_secret: affiliatedUserSecret,
-      },
-    );
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
     let headers = {};
-    if (
-      response.data &&
-      response.data.data &&
-      response.data.data.affiliated_user_session_token
-    ) {
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
       headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token":
-          response.data.data.affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
     } else {
-      console.error(
-        "affiliated_user_session_token not found in the response data.",
-      );
+      console.error("affiliated_user_session_token not found in the response data.");
     }
 
     const loanDataRequest = req.body;
@@ -321,29 +302,19 @@ router.post("/upwards/complete", async (req, res) => {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-    const response = await axios.post(
-      "https://uat1.upwards.in/af/v1/authenticate/",
-      {
-        affiliated_user_id: affiliatedUserId,
-        affiliated_user_secret: affiliatedUserSecret,
-      },
-    );
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
 
     let headers = {};
-    if (
-      response.data &&
-      response.data.data &&
-      response.data.data.affiliated_user_session_token
-    ) {
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
       headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token":
-          response.data.data.affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
     } else {
-      console.error(
-        "affiliated_user_session_token not found in the response data.",
-      );
+      console.error("affiliated_user_session_token not found in the response data.");
     }
 
     const completeRequest = req.body;
@@ -366,29 +337,19 @@ router.post("/upwards/decision", async (req, res) => {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-    const response = await axios.post(
-      "https://uat1.upwards.in/af/v1/authenticate/",
-      {
-        affiliated_user_id: affiliatedUserId,
-        affiliated_user_secret: affiliatedUserSecret,
-      },
-    );
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
 
     let headers = {};
-    if (
-      response.data &&
-      response.data.data &&
-      response.data.data.affiliated_user_session_token
-    ) {
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
       headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token":
-          response.data.data.affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
     } else {
-      console.error(
-        "affiliated_user_session_token not found in the response data.",
-      );
+      console.error("affiliated_user_session_token not found in the response data.");
     }
 
     const decisionRequest = req.body;
@@ -411,29 +372,19 @@ router.post("/upwards/transition", async (req, res) => {
     const affiliatedUserId = 73;
     const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
 
-    const response = await axios.post(
-      "https://uat1.upwards.in/af/v1/authenticate/",
-      {
-        affiliated_user_id: affiliatedUserId,
-        affiliated_user_secret: affiliatedUserSecret,
-      },
-    );
+    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+      affiliated_user_id: affiliatedUserId,
+      affiliated_user_secret: affiliatedUserSecret,
+    });
 
     let headers = {};
-    if (
-      response.data &&
-      response.data.data &&
-      response.data.data.affiliated_user_session_token
-    ) {
+    if (response.data && response.data.data && response.data.data.affiliated_user_session_token) {
       headers = {
         "Affiliated-User-Id": affiliatedUserId,
-        "Affiliated-User-Session-Token":
-          response.data.data.affiliated_user_session_token,
+        "Affiliated-User-Session-Token": response.data.data.affiliated_user_session_token,
       };
     } else {
-      console.error(
-        "affiliated_user_session_token not found in the response data.",
-      );
+      console.error("affiliated_user_session_token not found in the response data.");
     }
 
     const transitionRequest = req.body;
@@ -655,12 +606,16 @@ router.post("/lendingkart/create-application", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.post("/lendingkart/documents", async (req, res) => {
+router.post("/lendingkart/documents", upload.single("file"), async (req, res) => {
   try {
-    data = req.body;
+    const { applicationId, documentType } = req.body;
+    const filePath = req.file.path;
+    const fileStream = fs.createReadStream(filePath);
+    const formData = new FormData();
+    formData.append("file", fileStream);
     const lkResponse = await axios.post(
       `https://api.lendingkart.com/v2/partner/leads/documents/${applicationId}/${documentType}`,
-      data,
+      formData,
       {
         headers: {
           "Content-Type": "application/json",
