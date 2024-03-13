@@ -36,6 +36,10 @@ router.post("/", async (req, res) => {
     let user;
     try {
       user = await User.findOne({ phone: mobilenumber });
+      if (!user) {
+        const newUser = new User({ phone: mobilenumber });
+        user = await newUser.save();
+      }
     } catch (mongoError) {
       console.error("MongoDB error:", mongoError);
     }
@@ -61,12 +65,12 @@ router.post("/", async (req, res) => {
     });
 
     const responseData = response2.data;
-    user.accounts.push({
-      fibe: {
-        sent: requestData,
-        res: responseData,
-      },
-    });
+    // user.accounts.push({
+    //   fibe: {
+    //     sent: requestData,
+    //     res: responseData,
+    //   },
+    // });
 
     try {
       if (user) {

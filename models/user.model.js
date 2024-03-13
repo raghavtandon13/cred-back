@@ -58,8 +58,8 @@ const userSchema = new Schema(
     },
     employment: {
       type: String,
-      required: false,
-      trim: true,
+      enum: ["Salaried", "Self-employed", "No-employment"],
+      default: "Salaried",
     },
     company_name: {
       type: String,
@@ -92,11 +92,19 @@ const userSchema = new Schema(
       length: 4,
     },
 
+    pincode: {
+      type: String,
+      length: 6,
+    },
     phoneOtpExpire: {
       type: Date,
     },
 
     detailsFilled: {
+      type: Boolean,
+      default: false,
+    },
+    eformFilled: {
       type: Boolean,
       default: false,
     },

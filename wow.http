@@ -1,0 +1,38 @@
+POST /admin/lead/v2/partner/leads/create-application HTTP/1.1
+Host: lkext.lendingkart.com
+Content-Type: application/json
+X-Api-Key: 2e067259-5f4a-4ed1-880f-ece8e7b1b9dd
+
+{
+    "firstName": "DEBABRATA",
+    "lastName": " RAUL",
+    "email": "bhghav@candad.co.in",
+    "mobile": "8094634621",
+    "businessAge": 50,
+    "businessRevenue": 1200000,
+    "registeredAs": "Proprietorship",
+    "personalDob": "1990-05-21",
+    "personalPAN": "BUSPT0442K",
+    "gender": "MALE",
+    "cibilConsentForLK": true,
+    "personalAddress": {
+        "pincode": "560100",
+        "address": "wferferfe"
+    },
+    "businessRunBy": "Self",
+    "loanAmount": 700000,
+    "businessAddress": {
+        "address": "A-215, SRK silicana",
+        "pincode": "560100"
+    },
+    "productCategory": "Film Producer",
+    "natureOfBusiness": [
+        "Importer"
+    ],
+    "uniqueId": "xyz123xyz"
+}
+
+
+GET /posts
+Host: jsonplaceholder.typicode.com
+

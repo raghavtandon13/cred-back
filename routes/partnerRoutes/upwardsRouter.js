@@ -13,13 +13,16 @@ router.get("/", function (res) {
     message: "upwards service is running",
   });
 });
+// UAT
+const affiliatedUserId = 73;
+const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
+// Prod
+// const affiliatedUserId = 71;
+// const affiliatedUserSecret = "1sMBh1oAXgmT54aPJj7do6pIQpsMch71";
 
 router.post("/eligibility", async (req, res) => {
   try {
-    const affiliatedUserId = 73;
-    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-
-    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+    const response = await axios.post("https://leads.backend.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
@@ -35,7 +38,7 @@ router.post("/eligibility", async (req, res) => {
 
     const loanEligibilityRequest = req.body;
     const eligibilityResponse = await axios.post(
-      "https://uat1.upwards.in/af/v1/customer/loan/eligibility/",
+      "https://leads.backend.upwards.in/af/v1/customer/loan/eligibility/",
       loanEligibilityRequest,
       {
         headers,
@@ -50,10 +53,7 @@ router.post("/eligibility", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   try {
-    const affiliatedUserId = 73;
-    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-
-    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+    const response = await axios.post("https://leads.backend.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
@@ -70,7 +70,7 @@ router.post("/create", async (req, res) => {
     const loanDataRequest = req.body;
 
     const loanDataResponse = await axios.post(
-      "https://uat1.upwards.in/af/v2/customer/loan/data/create/",
+      "https://leads.backend.upwards.in/af/v2/customer/loan/data/create/",
       loanDataRequest,
       {
         headers,
@@ -85,10 +85,7 @@ router.post("/create", async (req, res) => {
 
 router.post("/complete", async (req, res) => {
   try {
-    const affiliatedUserId = 73;
-    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-
-    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+    const response = await axios.post("https://leads.backend.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
@@ -106,7 +103,7 @@ router.post("/complete", async (req, res) => {
     const completeRequest = req.body;
 
     const completeResponse = await axios.post(
-      "https://uat1.upwards.in/af/v2/customer/loan/data/complete/",
+      "https://leads.backend.upwards.in/af/v2/customer/loan/data/complete/",
       completeRequest,
       {
         headers,
@@ -120,10 +117,7 @@ router.post("/complete", async (req, res) => {
 
 router.post("/decision", async (req, res) => {
   try {
-    const affiliatedUserId = 73;
-    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-
-    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+    const response = await axios.post("https://leads.backend.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
@@ -141,7 +135,7 @@ router.post("/decision", async (req, res) => {
     const decisionRequest = req.body;
 
     const decisionResponse = await axios.post(
-      "https://uat1.upwards.in/af/v2/customer/loan/credit_programs/decision/",
+      "https://leads.backend.upwards.in/af/v2/customer/loan/credit_programs/decision/",
       decisionRequest,
       {
         headers,
@@ -155,10 +149,7 @@ router.post("/decision", async (req, res) => {
 
 router.post("/transition", async (req, res) => {
   try {
-    const affiliatedUserId = 73;
-    const affiliatedUserSecret = "1sMbh5oAXgmT24aB127do6pLWpsMchS3";
-
-    const response = await axios.post("https://uat1.upwards.in/af/v1/authenticate/", {
+    const response = await axios.post("https://leads.backend.upwards.in/af/v1/authenticate/", {
       affiliated_user_id: affiliatedUserId,
       affiliated_user_secret: affiliatedUserSecret,
     });
@@ -176,7 +167,7 @@ router.post("/transition", async (req, res) => {
     const transitionRequest = req.body;
 
     const transitionResponse = await axios.post(
-      "https://uat1.upwards.in/af/v2/customer/loan/transition_data/",
+      "https://leads.backend.upwards.in/af/v2/customer/loan/transition_data/",
       transitionRequest,
       {
         headers,

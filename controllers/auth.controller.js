@@ -85,21 +85,14 @@ exports.createNewUser = async (req, res, next) => {
 
 // ---------------------- get auth for any user ------------------------
 exports.get_auth = async (req, res, next) => {
-  ////console.log(req.body);
   try {
     const { phone } = req.body;
     console.log("Phone: ", phone);
 
     const user = await User.findOne({ phone });
-    ////console.log("new user");
     if (!user) {
-      ////console.log("user not found creating new");
-      // create new user
       await this.createNewUser(req, res, next);
     } else {
-      // //console.log("user found login with otp");
-      // login user
-      // //console.log(req.body);
       await this.loginWithPhoneOtp(req, res, next);
     }
   } catch (error) {
@@ -107,6 +100,50 @@ exports.get_auth = async (req, res, next) => {
   }
 };
 
+// ---------------------- get auth for check eligibility ------------------------
+exports.check_eli = async (req, res) => {
+  console.log("Check eligibility");
+  try {
+    const { phone, name, email, ammount, dob, pincode, income, employmentType } = req.body;
+
+    const user = await User.findOne({ phone });
+    if (user) {
+      console.log("User found");
+    }
+    if (!user) {
+      newUser = new User({
+        phone: phone,
+        name: name,
+        email: email,
+        loan_required: ammount,
+        dob: dob,
+        pincode: pincode,
+        income: income,
+        employment: employmentType,
+        eformFilled: true,
+      });
+      await newUser.save();
+    } else {
+      console.log("User found: ", user);
+      user.loan_required = ammount;
+      user.dob = dob;
+      user.pincode = pincode;
+      user.income = income;
+      user.employment = employmentType;
+      user.name = name;
+      user.email = email;
+      user.eformFilled = true;
+      console.log("User saving...");
+      await user.save();
+      console.log("User saved");
+    }
+
+    res.status(200).json("Success");
+  } catch (error) {
+    console.log({ message: error.message, status: 500 });
+    res.status(500).json("Error: ", error.message);
+  }
+};
 // ------------ login with phone otp ----------------------------------
 
 exports.loginWithPhoneOtp = async (req, res, next) => {

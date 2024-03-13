@@ -8,15 +8,28 @@ const fs = require("fs");
 // const User = require("../models/user.model");
 // const FormData = require("form-data");
 // const path = require("node:path");
-// const multer = require("multer");
+const multer = require("multer");
+
+// Multer
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (_req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
 const casheRouter = require("./partnerRoutes/casheRouter");
 const faircentRouter = require("./partnerRoutes/faircentRouter");
 // const upwardsRouter = require("./partnerRoutes/upwardsRouter");
 const fibeRouter = require("./partnerRoutes/fibeRouter");
+const moneytapRouter = require("./partnerRoutes/moneytapRouter");
 
 // ROUTES
 router.use("/faircent", faircentRouter);
 router.use("/cashe", casheRouter);
+router.use("/moneytap", moneytapRouter);
 // router.use("/upwards", upwardsRouter);
 router.use("/fibe", fibeRouter);
 
@@ -35,14 +48,6 @@ router.post("/test", async (res) => {
       status: "Rejected",
       statuscode: 200,
       customerid: "1486034765",
-      reason: "customer lead created",
-      sanctionLimit: 0.0,
-      responseDate: "2023-02-27 13:05:18",
-      esRefId: "27958055oapwwd",
-      inPrincipleLimit: 0,
-      inPrincipleTenure: 0,
-      customerType: "A7",
-      redirectionUrl: "https://portal-qa.fibe.in/es-landing?sso=61jcY2RSd7tYJos20230712062033",
     };
 
     res.status(200).json(sendthis);
@@ -588,45 +593,65 @@ router.post("/lendingkart/lead-exists-status", async (req, res) => {
     res.json(lkResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
-router.post("/lendingkart/create-application", async (req, res) => {
+
+router.post("/lendingkart/p/create-application", async (req, res) => {
+
   try {
     data = req.body;
-    const lkResponse = await axios.post("https://api.lendingkart.com/v2/partner/leads/create-application", data, {
+    const lkResponse = await axios.post("https://lkext.lendingkart.com/admin/lead/v2/partner/leads/create-application", data, {
+
       headers: {
         "Content-Type": "application/json",
-        "X-Api-Key": "aaaa-bbbb-cccc-dddd",
+        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
       },
     });
     res.json(lkResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
+
 });
-router.post("/lendingkart/documents", upload.single("file"), async (req, res) => {
+router.post("/lendingkart/create-application", async (req, res) => {
   try {
-    const { applicationId, documentType } = req.body;
-    const filePath = req.file.path;
-    const fileStream = fs.createReadStream(filePath);
-    const formData = new FormData();
-    formData.append("file", fileStream);
-    const lkResponse = await axios.post(
-      `https://api.lendingkart.com/v2/partner/leads/documents/${applicationId}/${documentType}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-Api-Key": "aaaa-bbbb-cccc-dddd",
-        },
+    data = req.body;
+    const lkResponse = await axios.post("https://lkext.lendingkart.com/v2/partner/leads/create-application", data, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
       },
-    );
+    });
     res.json(lkResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
+  }
+});
+// upload.single("file"),
+router.post("/lendingkart/documents", upload.single("docImage"), async (req, res) => {
+  try {
+    const { applicationId, documentType } = req.body;
+    const docImagePath = req.file.path;
+    const fileStream = fs.createReadStream(docImagePath);
+    const formData = new FormData();
+    formData.append("file", fileStream);
+
+    const url = `https://api.lendingkart.com/v2/partner/leads/documents/${applicationId}/${documentType}`;
+    console.log("URL Triggered:", url);
+
+    const lkResponse = await axios.post(url, formData, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
+      },
+    });
+    res.json(lkResponse.data);
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 router.post("/lendingkart/magiclink", async (req, res) => {
@@ -635,13 +660,13 @@ router.post("/lendingkart/magiclink", async (req, res) => {
     const lkResponse = await axios.get(`https://api.lendingkart.com/v2/partner/leads/magic-link/${applicationId}`, {
       headers: {
         "Content-Type": "application/json",
-        "X-Api-Key": "aaaa-bbbb-cccc-dddd",
+        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
       },
     });
     res.json(lkResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
