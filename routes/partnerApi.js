@@ -24,12 +24,12 @@ const casheRouter = require("./partnerRoutes/casheRouter");
 const faircentRouter = require("./partnerRoutes/faircentRouter");
 // const upwardsRouter = require("./partnerRoutes/upwardsRouter");
 const fibeRouter = require("./partnerRoutes/fibeRouter");
-const moneytapRouter = require("./partnerRoutes/moneytapRouter");
+// const moneytapRouter = require("./partnerRoutes/moneytapRouter");
 
 // ROUTES
 router.use("/faircent", faircentRouter);
 router.use("/cashe", casheRouter);
-router.use("/moneytap", moneytapRouter);
+// router.use("/moneytap", moneytapRouter);
 // router.use("/upwards", upwardsRouter);
 router.use("/fibe", fibeRouter);
 
@@ -598,22 +598,23 @@ router.post("/lendingkart/lead-exists-status", async (req, res) => {
 });
 
 router.post("/lendingkart/p/create-application", async (req, res) => {
-
   try {
     data = req.body;
-    const lkResponse = await axios.post("https://lkext.lendingkart.com/admin/lead/v2/partner/leads/create-application", data, {
-
-      headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
+    const lkResponse = await axios.post(
+      "https://lkext.lendingkart.com/admin/lead/v2/partner/leads/create-application",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": "2e067259-5f4a-4ed1-880f-ece8e7b1b9dd",
+        },
       },
-    });
+    );
     res.json(lkResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: error.message });
   }
-
 });
 router.post("/lendingkart/create-application", async (req, res) => {
   try {
@@ -673,6 +674,7 @@ router.post("/lendingkart/magiclink", async (req, res) => {
 //---------------------------------------------------------------------------------------------//
 // FAIRCENT API----FAIRCENT API-------FAIRCENT API-----FAIRCENT API----FAIRCENT API------------//
 //---------------------------------------------------------------------------------------------//
+
 //TODO: Remove console.logs
 // router.post("/faircent/dedupe", async (req, res) => {
 //   try {
@@ -828,6 +830,162 @@ router.post("/moneyview/status", async (req, res) => {
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//---------------------------------------------------------------------------------------------//
+// MONEYTAP----MONEYTAP-------MONEYTAP------MONEYTAP-----MONEYTAP----MONEYTAP------------------//
+// --------------------------------------------------------------------------------------------//
+
+const base_url = "https://dev.moneytap.com";
+async function fetchAccessToken() {
+  try {
+    const client_id = "dsa-creditmantra";
+    const client_secret = "saWGY4hF804GeVl";
+    const credentials = `${client_id}:${client_secret}`;
+    const encodedCredentials = btoa(credentials);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${encodedCredentials}`,
+    };
+
+    const response = await axios.post(`${base_url}/oauth/token?grant_type=client_credentials`, null, { headers });
+    return response.data.access_token;
+  } catch (error) {
+    console.error("Error fetching access token:", error.message);
+    throw new Error("Failed to fetch access token");
+  }
+}
+router.post("/moneytap/create", async (req, res) => {
+  console.log("Received request at /moneytap/create");
+  try {
+    const data = req.body;
+
+    const accessToken = await fetchAccessToken();
+    console.log("Access Token:", accessToken);
+    const headers = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    };
+    const response = await axios.post(`${base_url}/v3/partner/lead/create`, data, { headers });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error at create endpoint:", error.message);
+    res.status(500).json({ error: error });
+  }
+});
+router.post("/moneytap/status", async (req, res) => {
+  try {
+    const { customerId } = req.body;
+    const accessToken = await fetchAccessToken();
+    const headers = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    };
+    const response = await axios.post(`${base_url}/v3/partner/lead/status`, { customerId: customerId }, { headers });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error fetching access token:", error.message);
+    res.status(500).json({ error: "Failed to fetch access token" });
+  }
+});
+
+//---------------------------------------------------------------------------------------------//
+// PREFR--------PREFR-----------PREFR----------PREFR---------PREFR--------PREFR----------------//
+// --------------------------------------------------------------------------------------------//
+
+const host = "randomurl.com";
+router.post("/prefr/dedupe", async (req, res) => {
+  console.log("Revieved request at /prefr/dedupe");
+  const { mobileNumber, personalEmailId, panNumber } = req.body;
+
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: "To be shared for UAT/PROD",
+  };
+  const reqBody = {
+    mobileNumber: mobileNumber,
+    personalEmailId: personalEmailId,
+    panNumber: panNumber,
+    // TODO: make a func for generating requestId
+    requestId: "1234",
+  };
+
+  try {
+    const response = await axios.post(`https://${host}/marketplace/mw/loans/v2/dedupe-service`, reqBody, headers);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error at prefer/dedupe:", error.message);
+    res.status(error.response.status).json({ error: error.response.data });
+  }
+});
+
+router.post("/prefr/start", async (req, res) => {
+  console.log("Revieved request at /prefr/start");
+  const { mobileNo } = req.body;
+
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: "To be shared for UAT/PROD",
+  };
+  const reqBody = {
+    mobileNo: mobileNo,
+    //  TODO: make a func for generating userId
+    userId: "1234",
+  };
+
+  try {
+    const response = await axios.post(`https://${host}/marketplace/mw/loans/v4/register-start/pl`, reqBody, headers);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error at prefer/start:", error.message);
+    res.status(error.response.status).json({ error: error.response.data });
+  }
+});
+
+router.post("/prefr/details", async (req, res) => {
+  console.log("Revieved request at /prefr/details");
+  const reqBody = req.body;
+  //  TODO: make a func for generating loanId
+  reqBody.loanId = "1234";
+
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: "To be shared for UAT/PROD",
+  };
+
+  try {
+    const response = await axios.post(
+      `https://${host}/marketplace/mw/application/v1/application-details`,
+      reqBody,
+      headers,
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error at prefer/details:", error.message);
+    res.status(error.response.status).json({ error: error.response.data });
+  }
+});
+
+router.post("/prefr/webview", async (req, res) => {
+  console.log("Revieved request at /prefr/webview");
+  const { loanId } = req.body;
+
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: "To be shared for UAT/PROD",
+  };
+  try {
+    const response = await axios.post(`https://${host}/host/marketplace/mw/loans/get-webview`, { loanId }, headers);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error at prefer/webview:", error.message);
+    res.status(error.response.status).json({ error: error.response.data });
   }
 });
 

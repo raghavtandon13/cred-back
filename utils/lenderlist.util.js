@@ -4,7 +4,6 @@ const path = require("path");
 const jsonFilePath = path.join(__dirname, "masterPolicy.json");
 const jsonData = fs.readFileSync(jsonFilePath);
 const data = JSON.parse(jsonData);
-console.log(data, "data");
 const eligibleLenders = [
   { name: "Fibe", minAge: 21, maxAge: 55, minSalary: 15000 },
   { name: "Upwards", minAge: 21, maxAge: 55, minSalary: 18000 },
@@ -19,7 +18,6 @@ const eligibleLenders = [
 ];
 
 function filterLenders(dob, income, pincode) {
-  console.log(dob, income, pincode);
   const dob1 = new Date(dob.toString());
   const currentDate = new Date();
   const age = currentDate.getFullYear() - dob1.getFullYear();
@@ -33,7 +31,6 @@ function filterLenders(dob, income, pincode) {
       foundArrays.push(key);
     }
   }
-  console.log(foundArrays, "foundArrays");
   if (foundArrays.length === 0) {
     return []
   }
