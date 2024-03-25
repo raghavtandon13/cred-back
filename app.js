@@ -28,6 +28,7 @@ var authRouter = require("./routes/auth");
 var googleAuthRouter = require("./routes/google_auth");
 var partnerRouter = require("./routes/partner");
 var partnerApi = require("./routes/partnerApi");
+var leads = require("./routes/leads")
 var test = require("./routes/test");
 var app = express();
 
@@ -58,6 +59,7 @@ app.use("/api" + API_VERSION + "/auth", authRouter);
 app.use("/api" + API_VERSION + "/auth/google", googleAuthRouter);
 app.use("/api" + API_VERSION + "/partner", partnerRouter);
 app.use("/api" + API_VERSION + "/partner-api", partnerApi);
+app.use("/api" + API_VERSION + "/leads", leads);
 app.use("/api" + API_VERSION + "/test", test);
 
 // catch 404 and forward to error handler
