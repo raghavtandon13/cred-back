@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
+const User = require("../models/user.model");
 
 router.get("/", function (req, res) {
   res.status(200).json({
@@ -9,21 +10,79 @@ router.get("/", function (req, res) {
   });
 });
 
-router.post("/inject", async function (req, res) {
-  console.log("injecting");
+function checkLeadAuth(req, res, next) {
+  const authHeader = req.headers["x-api-key"];
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "Authorization header is missing" });
+  }
+
+  const expectedAuthValue = "1qa2ws3ed4rf5tg6yh";
+  if (authHeader !== expectedAuthValue) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  next();
+}
+
+router.post("/inject", checkLeadAuth, async function (req, res) {
   const { lead } = req.body;
-  console.log("received lead:", lead);
+
   try {
-    const fibeRes = await fibeInject(lead);
-    console.log("fibeResData:", fibeRes);
-    const lkRes = await lendingKartInject(lead);
-    console.log("lkResData:", lkRes);
+    const [fibePromise, lkPromise, dbPromise] = await Promise.allSettled([
+      addtoDB(lead),
+      fibeInject(lead),
+      lendingKartInject(lead),
+    ]);
+
+    const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
+    const fibeRes = fibePromise.status === "fulfilled" ? fibePromise.value : `Error: ${fibePromise.reason.message}`;
+    const lkRes = lkPromise.status === "fulfilled" ? lkPromise.value : `Error: ${lkPromise.reason.message}`;
+    console.log(dbRes);
     res.status(200).json({ fibe: fibeRes, lendingKart: lkRes });
   } catch (error) {
-    console.error("Error during fibe injection:", error);
-    res.status(500).json({ error: error });
+    console.error("Error during injection:", error);
+    res.status(500).json({ error: error.message });
   }
 });
+
+async function addtoDB(lead) {
+  console.log("AddtoDB...");
+  let user = await User.findOne({ phone: lead.phone });
+  if (!user) {
+    newUser = new User({
+      name: lead.firstName + " " + lead.lastName,
+      phone: lead.phone,
+      dob: lead.dob,
+      email: lead.email,
+      gender: lead.gender,
+      city: lead.city,
+      state: lead.state,
+      pincode: lead.pincode,
+      pan: lead.pan,
+      company_name: lead.empName,
+      income: lead.salary,
+      partner: "MoneyTap",
+    });
+    user = await newUser.save();
+  } else {
+    user.name = lead.firstName + " " + lead.lastName;
+    user.phone = lead.phone;
+    user.dob = lead.dob;
+    user.email = lead.email;
+    user.gender = lead.gender;
+    user.city = lead.city;
+    user.state = lead.state;
+    user.pincode = lead.pincode;
+    user.pan = lead.pan;
+    user.company_name = lead.empName;
+    user.income = lead.salary;
+    user.partner = "MoneyTap";
+
+    await user.save();
+  }
+  return user;
+}
 
 async function fibeInject(lead) {
   console.log("fibe...");
@@ -52,12 +111,13 @@ async function fibeInject(lead) {
       salary: Math.ceil(lead.salary) || 0,
     },
     consent: true,
-    consentDatetime: new Date().toISOString(), // Assign current datetime
+    consentDatetime: new Date().toISOString(),
   };
   const apiUrl = "https://credmantra.com/api/v1/partner-api/fibe";
   const fibeRes = await axios.post(apiUrl, fibeReq);
   return fibeRes.data;
 }
+
 async function lendingKartInject(lead) {
   console.log("lk...");
   const lkReq = {
@@ -89,9 +149,9 @@ async function lendingKartInject(lead) {
       companyEmailId: lead.email,
     },
   };
-  console.log("lkReq:", lkReq);
   const apiUrl = "https://credmantra.com/api/v1/partner-api/lendingkart/p/create-application";
   const lkRes = await axios.post(apiUrl, lkReq);
   return lkRes.data;
 }
+
 module.exports = router;

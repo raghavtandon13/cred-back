@@ -46,6 +46,16 @@ const userSchema = new Schema(
       required: false,
       trim: true,
     },
+    city: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    state: {
+      type: String,
+      required: false,
+      trim: true,
+    },
     category: {
       type: String,
       required: false,
@@ -80,6 +90,10 @@ const userSchema = new Schema(
       type: String,
       required: false,
       trim: true,
+    },
+    partner: {
+      type: String,
+      default: "None",
     },
     residence_type: {
       type: String,
