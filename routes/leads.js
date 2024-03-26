@@ -17,7 +17,7 @@ function checkLeadAuth(req, res, next) {
     return res.status(401).json({ error: "Authorization header is missing" });
   }
 
-  const expectedAuthValue = "1qa2ws3ed4rf5tg6yh";
+  const expectedAuthValue = "vs65Cu06K1GB2qSdJejP";
   if (authHeader !== expectedAuthValue) {
     return res.status(403).json({ error: "Unauthorized" });
   }
@@ -29,17 +29,29 @@ router.post("/inject", checkLeadAuth, async function (req, res) {
   const { lead } = req.body;
 
   try {
-    const [fibePromise, lkPromise, dbPromise] = await Promise.allSettled([
-      addtoDB(lead),
+    const [
+      fibePromise,
+      lkPromise,
+      // upwardsPromise,
+      dbPromise,
+    ] = await Promise.allSettled([
       fibeInject(lead),
       lendingKartInject(lead),
+      // upwardsInject(lead),
+      addtoDB(lead),
     ]);
 
     const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
     const fibeRes = fibePromise.status === "fulfilled" ? fibePromise.value : `Error: ${fibePromise.reason.message}`;
     const lkRes = lkPromise.status === "fulfilled" ? lkPromise.value : `Error: ${lkPromise.reason.message}`;
-    console.log(dbRes);
-    res.status(200).json({ fibe: fibeRes, lendingKart: lkRes });
+    // const upwardsRes =
+    //   upwardsPromise.status === "fulfilled" ? upwardsPromise.value : `Error: ${upwardsPromise.reason.message}`;
+    console.log("saved to DB");
+    res.status(200).json({
+      fibe: fibeRes,
+      lendingKart: lkRes,
+      // upwards: upwardsRes
+    });
   } catch (error) {
     console.error("Error during injection:", error);
     res.status(500).json({ error: error.message });
@@ -152,6 +164,52 @@ async function lendingKartInject(lead) {
   const apiUrl = "https://credmantra.com/api/v1/partner-api/lendingkart/p/create-application";
   const lkRes = await axios.post(apiUrl, lkReq);
   return lkRes.data;
+}
+
+async function upwardsInject(lead) {
+  console.log("upwards...");
+  const upwardsReq = {
+    first_name: lead.firstName,
+    last_name: lead.lastName,
+    pan: lead.pan,
+    dob: lead.dob,
+    gender: lead.gender,
+    social_email_id: lead.email,
+    mobile_number1: lead.phone,
+    current_pincode: lead.phone,
+    current_city: lead.city,
+    current_state: lead.state,
+    company: lead.empName,
+    profession_type_id: 3,
+    salary_payment_mode_id: 2,
+    salary: parseInt(lead.salary),
+  };
+  console.log("upwardsReq:", upwardsReq);
+  const apiUrl1 = "https://credmantra.com/api/v1/partner-api/upwards/create";
+  const apiUrl2 = "https://credmantra.com/api/v1/partner-api/upwards/complete";
+  const apiUrl3 = "https://credmantra.com/api/v1/partner-api/upwards/decision";
+
+  try {
+    const upwardsRes1 = await axios.post(apiUrl1, upwardsReq);
+    console.log("ures1:", upwardsRes1);
+
+    const upwardsRes2 = await axios.post(apiUrl2, {
+      loan_id: upwardsRes1.data.data.loan_data.loan_id,
+      customer_id: upwardsRes1.data.data.loan_data.customer_id,
+    });
+    console.log("ures2:", upwardsRes2);
+
+    const upwardsRes3 = await axios.post(apiUrl3, {
+      loan_id: upwardsRes1.data.data.loan_data.loan_id,
+      customer_id: upwardsRes1.data.data.loan_data.customer_id,
+    });
+    console.log("ures3:", upwardsRes3);
+
+    return upwardsRes3.data;
+  } catch (error) {
+    console.error("Error during upwards injection:", error);
+    throw error; // Re-throw the error to be caught by the caller
+  }
 }
 
 module.exports = router;
