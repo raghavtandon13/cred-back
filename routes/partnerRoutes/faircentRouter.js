@@ -16,11 +16,48 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-//----------------------------------------------------------------------------------//
+async function createUser(mobileNo) {
+  let user;
+  try {
+    user = await User.findOne({ phone: mobileNo });
+    if (!user) {
+      console.log("creating");
+      const newUser = new User({ phone: mobileNo });
+      user = await newUser.save();
+      console.log("User created successfully:", user);
+    }
+  } catch (mongoError) {
+    console.error("MongoDB error:", mongoError);
+  }
+
+  if (!user.accounts) {
+    console.log("Initializing accounts array...");
+    user.accounts = [];
+    await user.save();
+  }
+  return user;
+}
+
+async function addToUser(user, data) {
+  const AccountData = {
+    ...data,
+  };
+
+  const AccountIndex = user.accounts.findIndex((account) => account.name === data.name);
+  if (AccountIndex !== -1) {
+    user.accounts[AccountIndex] = AccountData;
+    console.log("found index", AccountIndex);
+  } else {
+    user.accounts.push(AccountData);
+    console.log("pushing...");
+  }
+  await user.save();
+}
+
+1; //----------------------------------------------------------------------------------//
 // FAIRCENT API----FAIRCENT API-------FAIRCENT API-----FAIRCENT API----FAIRCENT API //
 //----------------------------------------------------------------------------------//
 
-//  TODO: Remove console.logs
 router.post("/dedupe", async (req, res) => {
   try {
     console.log("Received request at /faircent/dedupe");
@@ -47,11 +84,14 @@ router.post("/dedupe", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 router.post("/register", async (req, res) => {
   try {
     console.log("Received request at /faircent/register");
 
     const data = req.body;
+    const { mobile } = req.body;
+    const user = await createUser(mobile);
 
     console.log("Received data from frontend:");
     console.log("Data:", data);
@@ -68,12 +108,21 @@ router.post("/register", async (req, res) => {
     console.log("Status:", fResponse.status);
     console.log("Data:", fResponse.data);
 
+    await addToUser(user, {
+      name: "Faircent",
+      id: fResponse.data.result.loan_id,
+      status: fResponse.data.result.status,
+      res: data,
+      res: fResponse.data,
+    });
+
     res.status(200).json(fResponse.data);
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 router.post("/upload", upload.single("docImage"), async (req, res) => {
   try {
     console.log("Received request at /faircent/upload");
@@ -111,4 +160,5 @@ router.post("/upload", upload.single("docImage"), async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 module.exports = router;

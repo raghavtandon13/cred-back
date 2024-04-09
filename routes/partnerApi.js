@@ -4,11 +4,13 @@ var router = express.Router();
 var crypto = require("crypto");
 var axios = require("axios");
 const fs = require("fs");
+const User = require("../models/user.model");
 // const CryptoJS = require("crypto-js");
 // const User = require("../models/user.model");
 // const FormData = require("form-data");
 // const path = require("node:path");
 const multer = require("multer");
+const { v4: uuidv4 } = require("uuid");
 
 // Multer
 const storage = multer.diskStorage({
@@ -899,25 +901,22 @@ router.post("/moneytap/status", async (req, res) => {
 // PREFR--------PREFR-----------PREFR----------PREFR---------PREFR--------PREFR----------------//
 // --------------------------------------------------------------------------------------------//
 
-const host = "randomurl.com";
+const host = "https://phoenix-uat.creditvidya.com";
+const apikey = "c3f22da6a999b8ddf13b1c24d960444e";
 router.post("/prefr/dedupe", async (req, res) => {
   console.log("Revieved request at /prefr/dedupe");
-  const { mobileNumber, personalEmailId, panNumber } = req.body;
+  const body = req.body;
 
   const headers = {
     "Content-Type": "application/json",
-    apikey: "To be shared for UAT/PROD",
-  };
-  const reqBody = {
-    mobileNumber: mobileNumber,
-    personalEmailId: personalEmailId,
-    panNumber: panNumber,
-    // TODO: make a func for generating requestId
-    requestId: "1234",
+    apikey: apikey,
   };
 
+  const requestId = "CM-" + uuidv4().replace(/-/g, "");
+  body[requestId] = requestId;
+
   try {
-    const response = await axios.post(`https://${host}/marketplace/mw/loans/v2/dedupe-service`, reqBody, headers);
+    const response = await axios.post(`${host}/marketplace/mw/loans/v2/dedupe-service`, body, { headers: headers });
     res.json(response.data);
   } catch (error) {
     console.error("Error at prefer/dedupe:", error.message);
@@ -927,20 +926,52 @@ router.post("/prefr/dedupe", async (req, res) => {
 
 router.post("/prefr/start", async (req, res) => {
   console.log("Revieved request at /prefr/start");
+  const body = req.body;
   const { mobileNo } = req.body;
 
+  let user;
+  try {
+    user = await User.findOne({ phone: mobileNo });
+    if (!user) {
+      console.log("creating");
+      const newUser = new User({ phone: mobileNo });
+      user = await newUser.save();
+      console.log("User created successfully:", user);
+    }
+  } catch (mongoError) {
+    console.error("MongoDB error:", mongoError);
+  }
+
+  if (!user.accounts) {
+    console.log("Initializing accounts array...");
+    user.accounts = [];
+    await user.save();
+  }
   const headers = {
     "Content-Type": "application/json",
-    apikey: "To be shared for UAT/PROD",
+    apikey: apikey,
   };
-  const reqBody = {
-    mobileNo: mobileNo,
-    //  TODO: make a func for generating userId
-    userId: "1234",
-  };
+  const userId = "CMU-" + uuidv4().replace(/-/g, "");
+  body[userId] = userId;
 
   try {
-    const response = await axios.post(`https://${host}/marketplace/mw/loans/v4/register-start/pl`, reqBody, headers);
+    const response = await axios.post(`${host}/marketplace/mw/loans/v4/register-start/pl`, body, {
+      headers: headers,
+    });
+    const prefrAccountData = {
+      name: "Prefr",
+      id: response.data.data.loanId,
+    };
+
+    const prefrAccountIndex = user.accounts.findIndex((account) => account.name === "Prefr");
+    if (prefrAccountIndex !== -1) {
+      user.accounts[prefrAccountIndex] = prefrAccountData;
+      console.log("found index", prefrAccountIndex);
+    } else {
+      user.accounts.push(prefrAccountData);
+      console.log("pushing...");
+    }
+    await user.save();
     res.json(response.data);
   } catch (error) {
     console.error("Error at prefer/start:", error.message);
@@ -951,20 +982,16 @@ router.post("/prefr/start", async (req, res) => {
 router.post("/prefr/details", async (req, res) => {
   console.log("Revieved request at /prefr/details");
   const reqBody = req.body;
-  //  TODO: make a func for generating loanId
-  reqBody.loanId = "1234";
 
   const headers = {
     "Content-Type": "application/json",
-    apikey: "To be shared for UAT/PROD",
+    apikey: apikey,
   };
 
   try {
-    const response = await axios.post(
-      `https://${host}/marketplace/mw/application/v1/application-details`,
-      reqBody,
-      headers,
-    );
+    const response = await axios.post(`${host}/marketplace/mw/application/v1/application-details`, reqBody, {
+      headers: headers,
+    });
     res.json(response.data);
   } catch (error) {
     console.error("Error at prefer/details:", error.message);
@@ -978,14 +1005,36 @@ router.post("/prefr/webview", async (req, res) => {
 
   const headers = {
     "Content-Type": "application/json",
-    apikey: "To be shared for UAT/PROD",
+    apikey: apikey,
   };
   try {
-    const response = await axios.post(`https://${host}/host/marketplace/mw/loans/get-webview`, { loanId }, headers);
+    const response = await axios.post(`${host}/marketplace/mw/loans/get-webview`, { loanId }, { headers: headers });
     res.json(response.data);
   } catch (error) {
     console.error("Error at prefer/webview:", error.message);
     res.status(error.response.status).json({ error: error.response.data });
+  }
+});
+
+router.post("/prefr/webhook", async (req, res) => {
+  try {
+    console.log("Received request at /prefr/webhook");
+    const { loanId } = req.body;
+
+    const user = await User.findOne({ "accounts.id": loanId });
+
+    if (!user) {
+      return res.status(404).json({ error: "LoanID not found" });
+    }
+    await User.updateOne(
+      { accounts: { $elemMatch: { name: "Prefr", id: loanId } } },
+      { $set: { "accounts.$.response": req.body } },
+    );
+
+    res.json({ status: "success", id: loanId });
+  } catch (err) {
+    console.error("Error occurred while processing webhook:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

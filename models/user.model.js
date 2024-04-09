@@ -95,6 +95,10 @@ const userSchema = new Schema(
       type: String,
       default: "None",
     },
+    partnerSent: {
+      type: Boolean,
+      required: false,
+    },
     residence_type: {
       type: String,
       required: false,

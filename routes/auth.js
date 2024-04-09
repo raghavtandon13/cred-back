@@ -32,9 +32,9 @@ router.get("/verify-user", checkAuth, fetchCurrentUser);
 
 router.get("/admin", checkAuth, checkAdmin, handleAdmin);
 
-router.post("/lender", (req, res) => {
+router.post("/lender", async (req, res) => {
   const { dob, income, pincode } = req.body;
-  const result = filterLenders(dob, income, pincode);
+  const result = await filterLenders(dob, income, pincode);
   res.status(200).json({
     type: "success",
     data: result,

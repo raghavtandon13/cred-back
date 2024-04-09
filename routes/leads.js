@@ -1,7 +1,8 @@
-const express = require("express");
-const axios = require("axios");
-const router = express.Router();
-const User = require("../models/user.model");
+const express = require("express");                                                                                      │
+const axios = require("axios");                                                                                          │
+const router = express.Router();                                                                                         │
+const User = require("../models/user.model");                                                                            │
+const filterLenders = require("../utils/lenderlist.util");
 
 router.get("/", function (req, res) {
   res.status(200).json({
@@ -12,46 +13,119 @@ router.get("/", function (req, res) {
 
 function checkLeadAuth(req, res, next) {
   const authHeader = req.headers["x-api-key"];
-
   if (!authHeader) {
     return res.status(401).json({ error: "Authorization header is missing" });
   }
-
   const expectedAuthValue = "vs65Cu06K1GB2qSdJejP";
   if (authHeader !== expectedAuthValue) {
     return res.status(403).json({ error: "Unauthorized" });
   }
-
   next();
 }
 
 router.post("/inject", checkLeadAuth, async function (req, res) {
   const { lead } = req.body;
+  try {
+    const [dbPromise] = await Promise.allSettled([addtoDB(lead)]);
+    const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
+    const allRes = {
+      status: "success",
+    };
+    res.status(200).json(allRes);
+  } catch (error) {
+    console.error("Error during injection:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/inject2", checkLeadAuth, async function (req, res) {
+  const { lead } = req.body;
+  let { lenders = [] } = req.body;
+  const mainList = await filterLenders(lead.dob, lead.salary, parseInt(lead.pincode));
+  const availableLenders = ["Fibe", "Prefr"];
+  lenders = mainList.filter((element) => availableLenders.includes(element));
+  console.log(lead.phone, " lenders: ", lenders);
+
+  if (lenders.length === 0) {
+    res.status(200).json({ status: "Not eligible for any lender" });
+    return;
+  }
+  const promises = [];
+
+  if (lenders.includes("Fibe") || lenders.length === 0) {
+    promises.push(fibeInject(lead));
+  }
+  if (lenders.includes("LendingKart") || lenders.length === 0) {
+    promises.push(lendingKartInject(lead));
+  }
+  if (lenders.includes("Upwards") || lenders.length === 0) {
+    promises.push(upwardsInject(lead));
+  }
+  if (lenders.includes("Cashe") || lenders.length === 0) {
+    promises.push(casheInject(lead));
+  }
+  if (lenders.includes("Faircent") || lenders.length === 0) {
+    promises.push(faircentInject(lead));
+  }
+  if (lenders.includes("Prefr") || lenders.length === 0) {
+    promises.push(prefrInject(lead));
+  }
 
   try {
-    const [
-      fibePromise,
-      lkPromise,
-      // upwardsPromise,
-      dbPromise,
-    ] = await Promise.allSettled([
-      fibeInject(lead),
-      lendingKartInject(lead),
-      // upwardsInject(lead),
-      addtoDB(lead),
-    ]);
+    const results = await Promise.allSettled(promises);
 
-    const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
-    const fibeRes = fibePromise.status === "fulfilled" ? fibePromise.value : `Error: ${fibePromise.reason.message}`;
-    const lkRes = lkPromise.status === "fulfilled" ? lkPromise.value : `Error: ${lkPromise.reason.message}`;
-    // const upwardsRes =
-    //   upwardsPromise.status === "fulfilled" ? upwardsPromise.value : `Error: ${upwardsPromise.reason.message}`;
-    console.log("saved to DB");
-    res.status(200).json({
+    const fibeResult = lenders.includes("Fibe") || lenders.length === 0 ? results.shift() : null;
+    const fibeRes = fibeResult
+      ? fibeResult.status === "fulfilled"
+        ? fibeResult.value
+        : `Error: ${fibeResult.reason.message}`
+      : undefined;
+
+    const lkResult = lenders.includes("LendingKart") || lenders.length === 0 ? results.shift() : null;
+    const lkRes = lkResult
+      ? lkResult.status === "fulfilled"
+        ? lkResult.value
+        : `Error: ${lkResult.reason.message}`
+      : undefined;
+
+    const upwardsResult = lenders.includes("Upwards") || lenders.length === 0 ? results.shift() : null;
+    const upwardsRes = upwardsResult
+      ? upwardsResult.status === "fulfilled"
+        ? upwardsResult.value
+        : `Error: ${upwardsResult.reason.message}`
+      : undefined;
+
+    const casheResult = lenders.includes("Cashe") || lenders.length === 0 ? results.shift() : null;
+    const casheRes = casheResult
+      ? casheResult.status === "fulfilled"
+        ? casheResult.value
+        : `Error: ${casheResult.reason.message}`
+      : undefined;
+
+    const faircentResult = lenders.includes("Faircent") || lenders.length === 0 ? results.shift() : null;
+    const faircentRes = faircentResult
+      ? faircentResult.status === "fulfilled"
+        ? faircentResult.value
+        : `Error: ${faircentResult.reason.message}`
+      : undefined;
+
+    const prefrResult = lenders.includes("Prefr") || lenders.length === 0 ? results.shift() : null;
+    const prefrRes = prefrResult
+      ? prefrResult.status === "fulfilled"
+        ? prefrResult.value
+        : `Error: ${prefrResult.reason.message}`
+      : undefined;
+
+    const allRes = {
       fibe: fibeRes,
       lendingKart: lkRes,
-      // upwards: upwardsRes
-    });
+      upwards: upwardsRes,
+      cashe: casheRes,
+      faircent: faircentRes,
+      prefr: prefrRes,
+    };
+    logToFile(allRes);
+    res.status(200).json(allRes);
   } catch (error) {
     console.error("Error during injection:", error);
     res.status(500).json({ error: error.message });
@@ -59,7 +133,6 @@ router.post("/inject", checkLeadAuth, async function (req, res) {
 });
 
 async function addtoDB(lead) {
-  console.log("AddtoDB...");
   let user = await User.findOne({ phone: lead.phone });
   if (!user) {
     newUser = new User({
@@ -75,6 +148,7 @@ async function addtoDB(lead) {
       company_name: lead.empName,
       income: lead.salary,
       partner: "MoneyTap",
+      partnerSent: false,
     });
     user = await newUser.save();
   } else {
@@ -89,7 +163,6 @@ async function addtoDB(lead) {
     user.pan = lead.pan;
     user.company_name = lead.empName;
     user.income = lead.salary;
-    user.partner = "MoneyTap";
 
     await user.save();
   }
@@ -97,7 +170,6 @@ async function addtoDB(lead) {
 }
 
 async function fibeInject(lead) {
-  console.log("fibe...");
   const fibeReq = {
     mobilenumber: lead.phone || "",
     profile: {
@@ -131,7 +203,6 @@ async function fibeInject(lead) {
 }
 
 async function lendingKartInject(lead) {
-  console.log("lk...");
   const lkReq = {
     firstName: lead.firstName,
     lastName: lead.lastName,
@@ -167,49 +238,204 @@ async function lendingKartInject(lead) {
 }
 
 async function upwardsInject(lead) {
-  console.log("upwards...");
+  console.log("up started");
   const upwardsReq = {
     first_name: lead.firstName,
     last_name: lead.lastName,
     pan: lead.pan,
     dob: lead.dob,
-    gender: lead.gender,
+    gender: lead.gender.toLowerCase(),
     social_email_id: lead.email,
-    mobile_number1: lead.phone,
-    current_pincode: lead.phone,
+    mobile_number1: lead.phone.toString(),
+    current_pincode: lead.pincode.toString(),
     current_city: lead.city,
     current_state: lead.state,
-    company: lead.empName,
-    profession_type_id: 3,
+    company: lead.empName || "company",
+    employment_status_id: 3,
+    profession_type_id: 21,
     salary_payment_mode_id: 2,
     salary: parseInt(lead.salary),
+    consent: true,
   };
-  console.log("upwardsReq:", upwardsReq);
   const apiUrl1 = "https://credmantra.com/api/v1/partner-api/upwards/create";
   const apiUrl2 = "https://credmantra.com/api/v1/partner-api/upwards/complete";
   const apiUrl3 = "https://credmantra.com/api/v1/partner-api/upwards/decision";
 
   try {
     const upwardsRes1 = await axios.post(apiUrl1, upwardsReq);
-    console.log("ures1:", upwardsRes1);
-
-    const upwardsRes2 = await axios.post(apiUrl2, {
-      loan_id: upwardsRes1.data.data.loan_data.loan_id,
-      customer_id: upwardsRes1.data.data.loan_data.customer_id,
-    });
-    console.log("ures2:", upwardsRes2);
-
-    const upwardsRes3 = await axios.post(apiUrl3, {
-      loan_id: upwardsRes1.data.data.loan_data.loan_id,
-      customer_id: upwardsRes1.data.data.loan_data.customer_id,
-    });
-    console.log("ures3:", upwardsRes3);
-
-    return upwardsRes3.data;
+    if (upwardsRes1.data.data.loan_data.customer_id && upwardsRes1.data.data.loan_data.loan_id) {
+      const upwardsRes2 = await axios.post(apiUrl2, {
+        loan_id: upwardsRes1.data.data.loan_data.loan_id,
+        customer_id: upwardsRes1.data.data.loan_data.customer_id,
+      });
+      const upwardsRes3 = await axios.post(apiUrl3, {
+        loan_id: upwardsRes1.data.data.loan_data.loan_id,
+        customer_id: upwardsRes1.data.data.loan_data.customer_id,
+      });
+      return upwardsRes3.data;
+    }
+    return upwardsRes1.data;
   } catch (error) {
-    console.error("Error during upwards injection:", error);
-    throw error; // Re-throw the error to be caught by the caller
+    return error.data;
   }
+}
+
+async function casheInject(lead) {
+  const casheReq = {
+    partner_name: "CredMantra_Partner1",
+    pan: lead.pan,
+    mobileNo: lead.phone,
+    name: lead.firstName + " " + lead.lastName,
+    addressLine1: "addressLine1",
+    locality: "locality",
+    pinCode: lead.pincode,
+    gender: lead.gender[0].toUpperCase(),
+    salary: lead.salary,
+    state: lead.state.toUpperCase(),
+    city: lead.city,
+    dob: lead.dob,
+    employmentType: 1,
+    salaryReceivedType: 3,
+    emailId: lead.email,
+    companyName: lead.empName,
+    loanAmount: 200000,
+  };
+
+  const apiUrl = "https://credmantra.com/api/v1/partner-api/cashe/preApproval";
+  const casheRes = await axios.post(apiUrl, casheReq);
+  return casheRes.data;
+}
+
+async function faircentInject(lead) {
+  const fcdedupeReq = {
+    mobile: lead.phone.toString(),
+    email: lead.email,
+    pan: lead.pan,
+  };
+  const faircentReq = {
+    fname: lead.firstName,
+    lname: lead.lastName,
+    dob: lead.dob,
+    pan: lead.pan,
+    mobile: parseInt(lead.phone),
+    pin: parseInt(lead.pincode),
+    state: lead.state,
+    city: lead.city,
+    address: "address1",
+    mail: lead.email,
+    gender: lead.gender[0].toUpperCase(),
+    employment_status: "Salaried",
+    loan_purpose: 1365,
+    loan_amount: 200000,
+    monthly_income: lead.salary,
+    consent: "Y",
+    tnc_link: "https://www.faircent.in/terms-conditions",
+    sign_ip: "3.27.146.211",
+    sign_time: Math.floor(Date.now() / 1000),
+  };
+
+  const dedupeUrl = "https://credmantra.com/api/v1/partner-api/faircent/dedupe";
+  const apiUrl = "https://credmantra.com/api/v1/partner-api/faircent/register";
+  const fcdedupeRes = await axios.post(dedupeUrl, fcdedupeReq);
+  if (fcdedupeRes.data.result.message === "No Duplicate Record Found.") {
+    const faircentRes = await axios.post(apiUrl, faircentReq);
+    return faircentRes.data;
+  } else {
+    return "Duplicate";
+  }
+  const faircentRes = await axios.post(apiUrl, faircentReq);
+  return faircentRes.data;
+}
+
+// async function moneytapInject(lead) {
+
+//   const moneytapReq = {
+//     mobilenumber: lead.phone || "",
+//     profile: {
+//       firstname: lead.firstName || "",
+//       lastname: lead.lastName || "",
+//       dob: lead.dob,
+//       profession: "Salaried",
+//       address1: "",
+//       address2: "",
+//       landmark: "",
+//       city: lead.city || "",
+//       pincode: lead.pincode || "",
+//       maritalstatus: "",
+//     },
+//     finance: {
+//       pan: lead.pan ? lead.pan.toUpperCase() : "",
+//     },
+//     employeedetails: {
+//       employername: lead.empName || "",
+//       officeaddress: "",
+//       officeCity: "",
+//       officepincode: lead.pincode || "",
+//       salary: Math.ceil(lead.salary) || 0,
+//     },
+//     consent: true,
+//     consentDatetime: new Date().toISOString(),
+//   };
+//   const apiUrl = "https://credmantra.com/api/v1/partner-api/moneytap";
+//   const moneytapRes = await axios.post(apiUrl, moneytapReq);
+//   return moneytapRes.data;
+// }
+
+async function prefrInject(lead) {
+  const prefrDedupeReq = {
+    mobileNumber: lead.phone.toString(),
+    panNumber: lead.pan,
+    personalEmailId: lead.email,
+    productName: "pl",
+  };
+  const prefrdedupeUrl = "https://credmantra.com/api/v1/partner-api/prefr/dedupe";
+  const prefrStartUrl = "https://credmantra.com/api/v1/partner-api/prefr/start2";
+  const prefrDetailsUrl = "https://credmantra.com/api/v1/partner-api/prefr/details";
+  const prefrDedupeRes = await axios.post(prefrdedupeUrl, prefrDedupeReq);
+
+  if (prefrDedupeRes.data.data.duplicateFound === false) {
+    const prefrStartRes = await axios.post(prefrStartUrl, {
+      mobileNo: lead.phone.toString(),
+    });
+    if (prefrStartRes.data.status === "success") {
+      const prefrReq = {
+        loanId: prefrStartRes.data.data.loanId,
+        firstName: lead.firstName,
+        lastName: lead.lastName,
+        personalEmailId: lead.email,
+        gender: lead.gender.charAt(0).toUpperCase() + lead.gender.slice(1).toLowerCase(),
+        dob: lead.dob.split("-").reverse().join("/"),
+        panNumber: lead.pan.toUpperCase(),
+        employmentType: "salaried",
+        desiredLoanAmount: 150000,
+        netMonthlyIncome: parseInt(lead.salary),
+        currentAddressPincode: lead.pincode.toString(),
+        currentAddress: "address 1",
+      };
+
+      const prefrRes = await axios.post(prefrDetailsUrl, prefrReq);
+
+      if (prefrRes.data.status === "failure") {
+        return "Duplicate Customer";
+      }
+      return prefrRes.data.status;
+    } else {
+      return "Failed at Start";
+    }
+  } else {
+    return "Duplicate";
+  }
+}
+
+function logToFile(message) {
+  const currentDate = new Date().toISOString().slice(0, 10);
+  const currentTime = new Date().toLocaleTimeString();
+  const logMessage = `${currentDate} ${currentTime}: ${JSON.stringify(message)}\n`;
+  fs.appendFile("leads-logfile.txt", logMessage, (err) => {
+    if (err) {
+      console.error("Error writing to log file:", err);
+    }
+  });
 }
 
 module.exports = router;

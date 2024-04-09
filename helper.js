@@ -1,57 +1,34 @@
 const mongoose = require("mongoose");
 const User = require("./models/user.model"); // Assuming you have a User model
+const { response } = require("express");
 require("dotenv").config();
+const fs = require('fs');
 
 async function main() {
-  const { MONGODB_URI, API_VERSION } = require("./config");
   try {
+    const { MONGODB_URI, API_VERSION } = require("./config");
     await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-    console.log("Database connected, running on 3000...");
+    console.log("Connected to MongoDB successfully.");
 
-    // Find the user with phone number "8094634634"
-    const user = await User.findOne({ phone: "8094634634" });
+    // Display loading indicator
+    process.stdout.write("Fetching users...");
 
-    if (user) {
-      console.log("User found:", user);
+    const users = await User.find({ partner: "MoneyTap", createdAt: { $gt: new Date("2024-04-03") } });
+    console.log("\nUsers fetched successfully.");
+    console.log(`Found ${users.length} users with partner "MoneyTap" and createdAt greater than April 3, 2024.`);
 
-      // Generate random JSON data for requestData and responseData
-      const requestData = { example: "data" };
-      const responseData = {
-        mobilenumber: "8983657823",
-        status: "Rejected",
-        statuscode: 200,
-        customerid: "1486034765",
-        reason: "customer lead created",
-        sanctionLimit: 0.0,
-        responseDate: "2023-02-27 13:05:18",
-        esRefId: "27958055oapwwd",
-        inPrincipleLimit: 0,
-        inPrincipleTenure: 0,
-        customerType: "A7",
-        redirectionUrl: "https://portal-qa.fibe.in/es-landing?sso=61jcY2RSd7tYJos20230712062033",
-      };
-
-      // Push data to user's accounts
-      user.accounts.push({
-        name: "Fibe",
-        url: responseData.redirectionUrl,
-        loanAmount: Math.max(responseData.sanctionLimit, responseData.inPrincipleLimit),
-        status: responseData.status,
-        id: responseData.customerid,
-        sent: requestData,
-        res: responseData,
-      });
-
-      // Save the user
-      await user.save();
-
-      console.log("Data pushed to user's accounts:", user.accounts);
-    } else {
-      console.log("User not found.");
-    }
+    // Write users to file
+    process.stdout.write("Saving users to file...");
+    fs.writeFile("users.json", JSON.stringify(users, null, 2), (err) => {
+      if (err) {
+        console.error("Error saving users to file:", err);
+      } else {
+        console.log("\nUsers saved to users.json.");
+      }
+    });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     process.exit(1);
   }
 }
