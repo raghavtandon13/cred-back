@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const passport = require("passport");
 require("../passportConfig")(passport);
 
-const { JWT_SECRET } = require("../config");
+const JWT_SECRET = process.env.JWT_SECRET;
 
 router.get("/", passport.authenticate("google", { scope: ["email", "profile"] }));
 

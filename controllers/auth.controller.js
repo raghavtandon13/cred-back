@@ -1,321 +1,308 @@
 const User = require("../models/user.model");
-
 const { PHONE_NOT_FOUND_ERR, PHONE_ALREADY_EXISTS_ERR, USER_NOT_FOUND_ERR, INCORRECT_OTP_ERR } = require("../errors");
-
-// set expiration time for otp
 const EXPIRATION_TIME = 5 * 60 * 1000;
-// set otp length
 const OTP_LENGTH = 4;
-
 const { createJwtToken } = require("../utils/token.util");
-
 const { generateOTP, fast2sms } = require("../utils/otp.util");
+const showError = require("../utils/errorBox");
 
 // --------------------- create new user ---------------------------------
 
 exports.createNewUser = async (req, res, next) => {
-  try {
-    let { phone } = req.body;
-    let { name } = req.body;
-    let { pan } = req.body;
-    let { dob } = req.body;
-    let { email } = req.body;
-    let { addr } = req.body;
-    let { category } = req.body;
-    let { gender } = req.body;
-    let { employment } = req.body;
-    let { loan_required } = req.body;
-    let { residence_type } = req.body;
-    let { income } = req.body;
-    let { credit_required } = req.body;
-    let { company_name } = req.body;
+    try {
+        let { phone } = req.body;
+        let { name } = req.body;
+        let { pan } = req.body;
+        let { dob } = req.body;
+        let { email } = req.body;
+        let { addr } = req.body;
+        let { category } = req.body;
+        let { gender } = req.body;
+        let { employment } = req.body;
+        let { loan_required } = req.body;
+        let { residence_type } = req.body;
+        let { income } = req.body;
+        let { credit_required } = req.body;
+        let { company_name } = req.body;
 
-    // check duplicate phone Number
-    const phoneExist = await User.findOne({ phone });
+        // check duplicate phone Number
+        const phoneExist = await User.findOne({ phone });
 
-    if (phoneExist) {
-      next({ status: 400, message: PHONE_ALREADY_EXISTS_ERR });
-      return;
+        if (phoneExist) {
+            next({ status: 400, message: PHONE_ALREADY_EXISTS_ERR });
+            return;
+        }
+
+        // create new user
+        const createUser = new User({
+            phone,
+            name: name,
+            pan: pan,
+            dob: dob,
+            email: email,
+            addr: addr,
+            category: category,
+            gender: gender,
+            employment: employment,
+            loan_required: loan_required,
+            residence_type: residence_type,
+            income: income,
+            credit_required: credit_required,
+            company_name: company_name,
+            role: phone === process.env.ADMIN_PHONE ? "ADMIN" : "USER",
+        });
+
+        // save user
+        const user = await createUser.save();
+
+        // generate otp
+        const otp = generateOTP(OTP_LENGTH);
+        console.log("OTP:", otp);
+        // save otp to user collection
+        user.phoneOtp = otp;
+        user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
+        await user.save();
+        // send otp to phone number
+        contactNumber = user.phone;
+        await fast2sms(otp, contactNumber, next);
+
+        res.status(200).json({
+            type: "success",
+            message: "Account created OTP sent to mobile number",
+            data: {
+                userId: user._id,
+            },
+        });
+    } catch (error) {
+        next({ message: error.message, status: 500 });
     }
-
-    // create new user
-    const createUser = new User({
-      phone,
-      name: name,
-      pan: pan,
-      dob: dob,
-      email: email,
-      addr: addr,
-      category: category,
-      gender: gender,
-      employment: employment,
-      loan_required: loan_required,
-      residence_type: residence_type,
-      income: income,
-      credit_required: credit_required,
-      company_name: company_name,
-      role: phone === process.env.ADMIN_PHONE ? "ADMIN" : "USER",
-    });
-
-    // save user
-    const user = await createUser.save();
-
-    // generate otp
-    const otp = generateOTP(OTP_LENGTH);
-    console.log("OTP:", otp);
-    // save otp to user collection
-    user.phoneOtp = otp;
-    user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
-    await user.save();
-    // send otp to phone number
-    contactNumber = user.phone;
-    await fast2sms(otp, contactNumber, next);
-
-    res.status(200).json({
-      type: "success",
-      message: "Account created OTP sent to mobile number",
-      data: {
-        userId: user._id,
-      },
-    });
-  } catch (error) {
-    next({ message: error.message, status: 500 });
-  }
 };
 
 // ---------------------- get auth for any user ------------------------
 exports.get_auth = async (req, res, next) => {
-  try {
-    const { phone } = req.body;
-    console.log("Phone: ", phone);
+    try {
+        const { phone } = req.body;
+        console.log("Phone: ", phone);
 
-    const user = await User.findOne({ phone });
-    if (!user) {
-      await this.createNewUser(req, res, next);
-    } else {
-      await this.loginWithPhoneOtp(req, res, next);
+        const user = await User.findOne({ phone });
+        if (!user) {
+            await this.createNewUser(req, res, next);
+        } else {
+            await this.loginWithPhoneOtp(req, res, next);
+        }
+    } catch (error) {
+        next({ message: error.message, status: 500 });
     }
-  } catch (error) {
-    next({ message: error.message, status: 500 });
-  }
 };
 
 // ---------------------- get auth for check eligibility ------------------------
 exports.check_eli = async (req, res) => {
-  console.log("Check eligibility");
-  try {
-    const { phone, name, email, ammount, dob, pincode, income, employmentType } = req.body;
+    console.log("Check eligibility");
+    try {
+        const { phone, name, email, ammount, dob, pincode, income, employmentType } = req.body;
 
-    const user = await User.findOne({ phone });
-    if (user) {
-      console.log("User found");
-    }
-    if (!user) {
-      newUser = new User({
-        phone: phone,
-        name: name,
-        email: email,
-        loan_required: ammount,
-        dob: dob,
-        pincode: pincode,
-        income: income,
-        employment: employmentType,
-        eformFilled: true,
-      });
-      await newUser.save();
-    } else {
-      console.log("User found: ", user);
-      user.loan_required = ammount;
-      user.dob = dob;
-      user.pincode = pincode;
-      user.income = income;
-      user.employment = employmentType;
-      user.name = name;
-      user.email = email;
-      user.eformFilled = true;
-      console.log("User saving...");
-      await user.save();
-      console.log("User saved");
-    }
+        const user = await User.findOne({ phone });
+        if (user) {
+            console.log("User found");
+        }
+        if (!user) {
+            newUser = new User({
+                phone: phone,
+                name: name,
+                email: email,
+                loan_required: ammount,
+                dob: dob,
+                pincode: pincode,
+                income: income,
+                employment: employmentType,
+                eformFilled: true,
+            });
+            await newUser.save();
+        } else {
+            console.log("User found: ", user);
+            user.loan_required = ammount;
+            user.dob = dob;
+            user.pincode = pincode;
+            user.income = income;
+            user.employment = employmentType;
+            user.name = name;
+            user.email = email;
+            user.eformFilled = true;
+            console.log("User saving...");
+            await user.save();
+            console.log("User saved");
+        }
 
-    res.status(200).json("Success");
-  } catch (error) {
-    console.log({ message: error.message, status: 500 });
-    res.status(500).json("Error: ", error.message);
-  }
+        res.status(200).json("Success");
+    } catch (error) {
+        console.log({ message: error.message, status: 500 });
+        res.status(500).json("Error: ", error.message);
+    }
 };
 // ------------ login with phone otp ----------------------------------
 
 exports.loginWithPhoneOtp = async (req, res, next) => {
-  try {
-    const { phone } = req.body;
-    const { name } = req.body;
-    const { pan } = req.body;
-    const { dob } = req.body;
-    const { email } = req.body;
-    const { addr } = req.body;
-    const { category } = req.body;
-    const { gender } = req.body;
-    const { employment } = req.body;
-    const { loan_required } = req.body;
-    const { residence_type } = req.body;
-    const { income } = req.body;
-    const { credit_required } = req.body;
-    const { company_name } = req.body;
+    try {
+        const { phone } = req.body;
+        const { name } = req.body;
+        const { pan } = req.body;
+        const { dob } = req.body;
+        const { email } = req.body;
+        const { addr } = req.body;
+        const { category } = req.body;
+        const { gender } = req.body;
+        const { employment } = req.body;
+        const { loan_required } = req.body;
+        const { residence_type } = req.body;
+        const { income } = req.body;
+        const { credit_required } = req.body;
+        const { company_name } = req.body;
 
-    const user = await User.findOne({ phone });
+        const user = await User.findOne({ phone });
 
-    if (!user) {
-      next({ status: 400, message: PHONE_NOT_FOUND_ERR });
-      return;
-    }
+        if (!user) {
+            next({ status: 400, message: PHONE_NOT_FOUND_ERR });
+            return;
+        }
 
-    // //console.log(req.body);
+        const otp = generateOTP(OTP_LENGTH);
+        console.log("OTP:", otp);
 
-    // generate otp
-    const otp = generateOTP(OTP_LENGTH);
-    console.log("OTP:", otp);
-    // save otp to user collection
-    user.phoneOtp = otp;
-    user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
-    user.isAccountVerified = true;
-    user.name = name;
-    user.addr = addr;
-    user.pan = pan;
-    user.dob = dob;
-    user.email = email;
-    user.category = category;
-    user.gender = gender;
-    user.loan_required = loan_required;
-    user.employment = employment;
-    user.residence_type = residence_type;
-    user.income = income;
-    user.credit_required = credit_required;
-    user.company_name = company_name;
-    //console.log(user);
-    await user.save();
-    // send otp to phone number
-    contactNumber = user.phone;
-    await fast2sms(
-      otp,
-      contactNumber,
-      next(
+        user.phoneOtp = otp;
+        user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
+        user.isAccountVerified = true;
+        user.name = name;
+        user.addr = addr;
+        user.pan = pan;
+        user.dob = dob;
+        user.email = email;
+        user.category = category;
+        user.gender = gender;
+        user.loan_required = loan_required;
+        user.employment = employment;
+        user.residence_type = residence_type;
+        user.income = income;
+        user.credit_required = credit_required;
+        user.company_name = company_name;
+
+        try {
+            await user.save();
+        } catch (error) {
+            showError(error.message);
+            // console.log(error.message)
+        }
+
+        await fast2sms(otp, phone);
         res.status(201).json({
-          type: "success",
-          message: "OTP sent to your registered phone number",
-          data: {
-            userId: user._id,
-          },
-        }),
-      ),
-    );
-  } catch (error) {
-    //console.log(error);
-    next({ message: error.message, status: 500 });
-  }
+            type: "success",
+            message: "OTP sent to your registered phone number",
+        });
+    } catch (error) {
+        next({ message: error.message, status: 500 });
+    }
 };
 
 // ----------------------- resend otp ------------------------------
 exports.resendOtp = async (req, res, next) => {
-  try {
-    const { phone } = req.body;
-    const user = await User.findOne({ phone });
+    try {
+        const { phone } = req.body;
+        const user = await User.findOne({ phone });
 
-    if (!user) {
-      next({ status: 400, message: PHONE_NOT_FOUND_ERR });
-      return;
+        if (!user) {
+            next({ status: 400, message: PHONE_NOT_FOUND_ERR });
+            return;
+        }
+
+        // generate otp
+        const otp = generateOTP(OTP_LENGTH);
+        // save otp to user collection
+        user.phoneOtp = otp;
+        user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
+        await user.save();
+
+        // send otp to phone number
+        contactNumber = user.phone;
+        await fast2sms(otp, user.phone, next);
+        res.status(201).json({
+            type: "success",
+            message: "OTP sent to your registered phone number",
+            data: {
+                userId: user._id,
+            },
+        });
+    } catch (error) {
+        next({ message: error.message, status: 500 });
     }
-
-    // generate otp
-    const otp = generateOTP(OTP_LENGTH);
-    // save otp to user collection
-    user.phoneOtp = otp;
-    user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
-    await user.save();
-
-    // send otp to phone number
-    contactNumber = user.phone;
-    await fast2sms(otp, user.phone, next);
-    res.status(201).json({
-      type: "success",
-      message: "OTP sent to your registered phone number",
-      data: {
-        userId: user._id,
-      },
-    });
-  } catch (error) {
-    next({ message: error.message, status: 500 });
-  }
 };
 
 // ---------------------- verify phone otp -------------------------
 
 exports.verifyPhoneOtp = async (req, res, next) => {
-  try {
-    const { phone, otp } = req.body;
+    try {
+        const { phone, otp } = req.body;
 
-    const user = await User.findOne({ phone });
-    //console.log(user, phone, otp);
-    if (!user) {
-      next({ status: 400, message: USER_NOT_FOUND_ERR });
-      return;
+        const user = await User.findOne({ phone });
+        //console.log(user, phone, otp);
+        if (!user) {
+            next({ status: 400, message: USER_NOT_FOUND_ERR });
+            return;
+        }
+
+        if (user.phoneOtp !== otp || user.phoneOtpExpire < Date.now()) {
+            next({ status: 400, message: INCORRECT_OTP_ERR });
+            return;
+        }
+
+        const token = createJwtToken({ user: user._id });
+
+        user.phoneOtp = "";
+        await user.save();
+
+        res.status(201).json({
+            type: "success",
+            message: "OTP verified successfully",
+            data: {
+                token,
+                userId: user._id,
+            },
+        });
+    } catch (error) {
+        //console.log(error);
+        next({ message: error.message, status: 500 });
     }
-
-    if (user.phoneOtp !== otp || user.phoneOtpExpire < Date.now()) {
-      next({ status: 400, message: INCORRECT_OTP_ERR });
-      return;
-    }
-
-    const token = createJwtToken({ user: user._id });
-
-    user.phoneOtp = "";
-    await user.save();
-
-    res.status(201).json({
-      type: "success",
-      message: "OTP verified successfully",
-      data: {
-        token,
-        userId: user._id,
-      },
-    });
-  } catch (error) {
-    //console.log(error);
-    next({ message: error.message, status: 500 });
-  }
 };
 
 // --------------- fetch current user -------------------------
 exports.fetchCurrentUser = async (req, res, next) => {
-  try {
-    const currentUser = res.locals.user;
+    try {
+        const currentUser = res.locals.user;
 
-    return res.status(200).json({
-      type: "success",
-      message: "fetch current user",
-      data: {
-        user: currentUser,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+        return res.status(200).json({
+            type: "success",
+            message: "fetch current user",
+            data: {
+                user: currentUser,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
 // --------------- admin access only -------------------------
 
 exports.handleAdmin = async (req, res, next) => {
-  try {
-    const currentUser = res.locals.user;
+    try {
+        const currentUser = res.locals.user;
 
-    return res.status(200).json({
-      type: "success",
-      message: "Okay you are admin!!",
-      data: {
-        user: currentUser,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+        return res.status(200).json({
+            type: "success",
+            message: "Okay you are admin!!",
+            data: {
+                user: currentUser,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
 };

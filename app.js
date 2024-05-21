@@ -1,52 +1,50 @@
+// Load environment variables
 require("dotenv").config();
+const MONGODB_URI = process.env.MONGODB_URI;
+const API_VERSION = process.env.API_VERSION;
 
-var createError = require("http-errors");
-var express = require("express");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-var cors = require("cors");
-const rateLimit = require("express-rate-limit");
+// Middleware Setup
+const createError = require("http-errors");
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
-const limiter = rateLimit({
-  windowMs: 10 * 1000,
-  max: 1,
-  handler: (req, res, next) => {
-    const timeUntilReset = Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000) || 1;
-    setTimeout(next, timeUntilReset * 1000);
-  },
-});
+// Initialize Express Application
+const app = express();
 
-const { MONGODB_URI, API_VERSION } = require("./config");
-// const { SERVER_ERR } = require("./errors");
+// CORS Configuration
+const allowlist = [
+    "http://localhost:4200",
+    "http://localhost:3000",
+    "https://credmantra.com",
+    "https://cred-front.vercel.app",
+];
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-var authRouter = require("./routes/auth");
-var googleAuthRouter = require("./routes/google_auth");
-var partnerRouter = require("./routes/partner");
-var partnerApi = require("./routes/partnerApi");
-var leads = require("./routes/leads");
-var app = express();
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            const isAllowed = !origin || allowlist.includes(origin);
+            callback(isAllowed ? null : new Error("Not allowed by CORS"), isAllowed);
+        },
+    }),
+);
 
-var allowlist = ["http://localhost:4200", "http://localhost:3000", "http://credmantra.com", "https://credmantra.com"];
-var corsOptionsDelegate = function (req, callback) {
-  var corsOptions;
-  if (allowlist.indexOf(req.header("Origin")) !== -1) {
-    corsOptions = { origin: true };
-  } else {
-    corsOptions = { origin: false };
-  }
-  callback(null, corsOptions);
-};
-
-app.use(cors(corsOptionsDelegate));
-
+// Middleware
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use("/api" + API_VERSION + "/logos", express.static("logos"));
+
+// Routes
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/users");
+const authRouter = require("./routes/auth");
+const googleAuthRouter = require("./routes/google_auth");
+const partnerRouter = require("./routes/partner");
+const partnerApi = require("./routes/partnerApi");
+const leads = require("./routes/leads");
 
 app.use("/api" + API_VERSION + "/", indexRouter);
 app.use("/api" + API_VERSION + "/users", usersRouter);
@@ -54,39 +52,30 @@ app.use("/api" + API_VERSION + "/auth", authRouter);
 app.use("/api" + API_VERSION + "/auth/google", googleAuthRouter);
 app.use("/api" + API_VERSION + "/partner", partnerRouter);
 app.use("/api" + API_VERSION + "/partner-api", partnerApi);
-app.use("/api" + API_VERSION + "/leads", limiter, leads);
-// app.use("/api" + API_VERSION + "/emi", emiRouter);
+app.use("/api" + API_VERSION + "/leads", leads);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
+// Error Handling Middleware
+app.use(function (_req, _res, next) {
+    next(createError(404));
 });
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // set the status and error message
-  res.status(err.status || 500);
+app.use(function (err, req, res, _next) {
+    res.locals.message = err.message;
+    res.locals.error = req.app.get("env") === "development" ? err : {};
+    res.status(err.status || 500).send();
 });
+
+// MongoDB Connection
+mongoose.set("strictQuery", false);
 
 async function main() {
-  try {
-    const connect = mongoose.connect(MONGODB_URI);
-    connect.then(
-      () => {
+    try {
+        await mongoose.connect(MONGODB_URI);
         console.log("Database connected");
-      },
-      (err) => {
-        console.log(err);
-      },
-    );
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
-  }
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
 }
 
 main();
