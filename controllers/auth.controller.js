@@ -1,84 +1,54 @@
 const User = require("../models/user.model");
 const { PHONE_NOT_FOUND_ERR, PHONE_ALREADY_EXISTS_ERR, USER_NOT_FOUND_ERR, INCORRECT_OTP_ERR } = require("../errors");
-const EXPIRATION_TIME = 5 * 60 * 1000;
-const OTP_LENGTH = 4;
 const { createJwtToken } = require("../utils/token.util");
 const { generateOTP, fast2sms } = require("../utils/otp.util");
 const showError = require("../utils/errorBox");
 
-// --------------------- create new user ---------------------------------
+const EXPIRATION_TIME = 5 * 60 * 1000;
+const OTP_LENGTH = 4;
+
+// create new user
 
 exports.createNewUser = async (req, res, next) => {
     try {
-        let { phone } = req.body;
-        let { name } = req.body;
-        let { pan } = req.body;
-        let { dob } = req.body;
-        let { email } = req.body;
-        let { addr } = req.body;
-        let { category } = req.body;
-        let { gender } = req.body;
-        let { employment } = req.body;
-        let { loan_required } = req.body;
-        let { residence_type } = req.body;
-        let { income } = req.body;
-        let { credit_required } = req.body;
-        let { company_name } = req.body;
+        const {
+            phone, name, pan, dob, email, addr, category, gender,
+            employment, loan_required, residence_type, income,
+            credit_required, company_name
+        } = req.body;
 
-        // check duplicate phone Number
-        const phoneExist = await User.findOne({ phone });
-
-        if (phoneExist) {
-            next({ status: 400, message: PHONE_ALREADY_EXISTS_ERR });
-            return;
+        if (await User.findOne({ phone })) {
+            return next({ status: 400, message: PHONE_ALREADY_EXISTS_ERR });
         }
 
-        // create new user
-        const createUser = new User({
-            phone,
-            name: name,
-            pan: pan,
-            dob: dob,
-            email: email,
-            addr: addr,
-            category: category,
-            gender: gender,
-            employment: employment,
-            loan_required: loan_required,
-            residence_type: residence_type,
-            income: income,
-            credit_required: credit_required,
-            company_name: company_name,
-            role: phone === process.env.ADMIN_PHONE ? "ADMIN" : "USER",
+        const role = phone === process.env.ADMIN_PHONE ? "ADMIN" : "USER";
+        const newUser = new User({
+            phone, name, pan, dob, email, addr, category, gender,
+            employment, loan_required, residence_type, income,
+            credit_required, company_name, role
         });
 
-        // save user
-        const user = await createUser.save();
+        const user = await newUser.save();
 
-        // generate otp
         const otp = generateOTP(OTP_LENGTH);
-        console.log("OTP:", otp);
-        // save otp to user collection
         user.phoneOtp = otp;
         user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
         await user.save();
-        // send otp to phone number
-        contactNumber = user.phone;
-        await fast2sms(otp, contactNumber, next);
+        
+        await fast2sms(otp, user.phone, next);
 
         res.status(200).json({
             type: "success",
-            message: "Account created OTP sent to mobile number",
-            data: {
-                userId: user._id,
-            },
+            message: "Account created. OTP sent to mobile number.",
+            data: { userId: user._id },
         });
     } catch (error) {
         next({ message: error.message, status: 500 });
     }
 };
 
-// ---------------------- get auth for any user ------------------------
+// get auth for any user 
+
 exports.get_auth = async (req, res, next) => {
     try {
         const { phone } = req.body;
@@ -95,16 +65,14 @@ exports.get_auth = async (req, res, next) => {
     }
 };
 
-// ---------------------- get auth for check eligibility ------------------------
+// get auth for check eligibility 
+
 exports.check_eli = async (req, res) => {
     console.log("Check eligibility");
     try {
         const { phone, name, email, ammount, dob, pincode, income, employmentType } = req.body;
 
         const user = await User.findOne({ phone });
-        if (user) {
-            console.log("User found");
-        }
         if (!user) {
             newUser = new User({
                 phone: phone,
@@ -139,7 +107,8 @@ exports.check_eli = async (req, res) => {
         res.status(500).json("Error: ", error.message);
     }
 };
-// ------------ login with phone otp ----------------------------------
+
+//  login with phone otp
 
 exports.loginWithPhoneOtp = async (req, res, next) => {
     try {
@@ -171,25 +140,25 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
         user.phoneOtp = otp;
         user.phoneOtpExpire = Date.now() + EXPIRATION_TIME;
         user.isAccountVerified = true;
-        user.name = name;
-        user.addr = addr;
-        user.pan = pan;
-        user.dob = dob;
-        user.email = email;
-        user.category = category;
-        user.gender = gender;
-        user.loan_required = loan_required;
-        user.employment = employment;
-        user.residence_type = residence_type;
-        user.income = income;
-        user.credit_required = credit_required;
-        user.company_name = company_name;
+
+        if (name) user.name = name;
+        if (addr) user.addr = addr;
+        if (pan) user.pan = pan;
+        if (dob) user.dob = dob;
+        if (email) user.email = email;
+        if (category) user.category = category;
+        if (gender) user.gender = gender;
+        if (loan_required) user.loan_required = loan_required;
+        if (employment) user.employment = employment;
+        if (residence_type) user.residence_type = residence_type;
+        if (income) user.income = income;
+        if (credit_required) user.credit_required = credit_required;
+        if (company_name) user.company_name = company_name;
 
         try {
             await user.save();
         } catch (error) {
             showError(error.message);
-            // console.log(error.message)
         }
 
         await fast2sms(otp, phone);
@@ -202,7 +171,8 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
     }
 };
 
-// ----------------------- resend otp ------------------------------
+// resend otp
+
 exports.resendOtp = async (req, res, next) => {
     try {
         const { phone } = req.body;
@@ -235,7 +205,7 @@ exports.resendOtp = async (req, res, next) => {
     }
 };
 
-// ---------------------- verify phone otp -------------------------
+// verify phone otp
 
 exports.verifyPhoneOtp = async (req, res, next) => {
     try {
@@ -272,8 +242,9 @@ exports.verifyPhoneOtp = async (req, res, next) => {
     }
 };
 
-// --------------- fetch current user -------------------------
-exports.fetchCurrentUser = async (req, res, next) => {
+// fetch current user
+
+exports.fetchCurrentUser = async (_req, res, next) => {
     try {
         const currentUser = res.locals.user;
 
@@ -289,9 +260,9 @@ exports.fetchCurrentUser = async (req, res, next) => {
     }
 };
 
-// --------------- admin access only -------------------------
+// admin access only
 
-exports.handleAdmin = async (req, res, next) => {
+exports.handleAdmin = async (_req, res, next) => {
     try {
         const currentUser = res.locals.user;
 

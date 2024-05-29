@@ -63,3 +63,5 @@ router.post("/mpocket/status", async (req, res) => {
         res.status(error.response.status).json({ error: error.response.data });
     }
 });
+
+module.exports = router;

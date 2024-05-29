@@ -35,9 +35,7 @@ router.post("/inject", checkLeadAuth, async function (req, res) {
     try {
         const [dbPromise] = await Promise.allSettled([addtoDB(lead)]);
         const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
-        const allRes = {
-            status: "success",
-        };
+        const allRes = { status: "success" };
         res.status(200).json(allRes);
     } catch (error) {
         console.error("Error during injection:", error);
@@ -61,8 +59,8 @@ router.post("/inject2", checkLeadAuth, async function (req, res) {
     // if (lenders.length === 0) return res.status(200).json({ status: "Insufficient Data" });
 
     const lenders = ["Payme"];
-
     console.log(lead.phone, " lenders: ", lenders);
+
     const promises = [];
 
     if (lenders.includes("Fibe")) promises.push(fibeInject(lead));
@@ -154,7 +152,7 @@ router.post("/inject2", checkLeadAuth, async function (req, res) {
 async function addtoDB(lead) {
     let user = await User.findOne({ phone: lead.phone });
     if (!user) {
-        newUser = new User({
+        let newUser = new User({
             name: lead.firstName + " " + lead.lastName,
             phone: lead.phone,
             dob: lead.dob,
@@ -602,12 +600,12 @@ async function paymeInject(lead) {
             const pRes3 = await axios.post(apiUrl3, pReq3);
             console.log(pRes3.data);
             p3 = pRes3.data;
-            break; // Break out of the loop if successful
+            break;
         } catch (error) {
             console.error("Error in pRes3 request:", error);
-            retries--; // Decrement the retries counter
+            retries--;
             if (retries === 0) {
-                return { error: "Max retries exceeded" }; // Return an error after max retries
+                return { error: "Max retries exceeded" };
             }
         }
     }

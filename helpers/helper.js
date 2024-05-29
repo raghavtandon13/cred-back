@@ -59,6 +59,6 @@ async function fibeClean() {
     }
 }
 
-fibeCount();
+// fibeCount();
 // fibeClean();
 totalCount();

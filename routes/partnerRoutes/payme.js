@@ -2,9 +2,6 @@ const router = require("express").Router();
 const axios = require("axios");
 const merchant_id = process.env.PAYME_MERCHANT_ID;
 const { createUser, updateUser, addToUser } = require("../../middlewares/createUser");
-// const FormData = require("form-data");
-// const upload = require("../../middlewares/upload");
-// const fs = require("fs");
 
 router.get("/", function(_req, res) {
     res.status(200).json({ type: "success", message: "payme service is running" });

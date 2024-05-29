@@ -2,17 +2,18 @@
 const router = require("express").Router();
 const axios = require("axios");
 const { createUser, addToUser } = require("../../middlewares/createUser");
-const domain = "domain.com";
-const headers = { "Content-Type": "application/json", "api-key": apikey };
+const User = require("../../models/user.model");
+const domain = "stg-api.mpkt.in";
+const headers = { "Content-Type": "application/json", "api-key": "59D8AB0B311246C58001D9363D35A" };
 
-router.post("/mpocket/dedupe", async (req, res) => {
-    console.log(body);
+router.post("/dedupe", async (req, res) => {
     try {
         const { mobileNumber, email } = req.body;
         const data = {
             email: Buffer.from(email).toString("base64"),
             mobileNumber: Buffer.from(mobileNumber).toString("base64"),
         };
+        console.log(data);
         const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/dedupe/chec`, data, {
             headers: headers,
         });
@@ -23,12 +24,14 @@ router.post("/mpocket/dedupe", async (req, res) => {
     }
 });
 
-router.post("/mpocket/lead", async (req, res) => {
+router.post("/lead", async (req, res) => {
     try {
         const data = req.body;
+        const user = await createUser(req.body.mobile_no);
         const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/user`, data, {
             headers: headers,
         });
+        await addToUser(user, { name: "Mpocket", id: response.data.data.request_id });
         res.json(response.data);
     } catch (error) {
         console.error("Error at mpocket/lead:", error.message);
@@ -36,7 +39,7 @@ router.post("/mpocket/lead", async (req, res) => {
     }
 });
 
-router.post("/mpocket/bulk", async (req, res) => {
+router.post("/bulk", async (req, res) => {
     try {
         const data = req.body;
         const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/bulk/user`, data, {
@@ -49,7 +52,7 @@ router.post("/mpocket/bulk", async (req, res) => {
     }
 });
 
-router.post("/mpocket/status", async (req, res) => {
+router.post("/status", async (req, res) => {
     try {
         const { request_id } = req.body;
         const response = await axios.post(
@@ -57,9 +60,15 @@ router.post("/mpocket/status", async (req, res) => {
             data,
             { headers: headers },
         );
+        await User.updateOne(
+            { accounts: { $elemMatch: { name: "Mpocket", id: request_id } } },
+            { $set: { "accounts.$.response": response.data.data } },
+        );
         res.json(response.data);
     } catch (error) {
         console.error("Error at mpocket/status:", error.message);
         res.status(error.response.status).json({ error: error.response.data });
     }
 });
+
+module.exports = router;

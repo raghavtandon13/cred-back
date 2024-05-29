@@ -11,10 +11,12 @@ const lendingkartRouter = require("./partnerRoutes/lendingkart");
 const moneytapRouter = require("./partnerRoutes/moneytap");
 const moneyviewRouter = require("./partnerRoutes/moneyview");
 const moneywideRouter = require("./partnerRoutes/moneywide");
+const mpocketRouter = require("./partnerRoutes/mpocket");
 const paymeRouter = require("./partnerRoutes/payme");
 const prefrRouter = require("./partnerRoutes/prefr");
 const upwardsRouter = require("./partnerRoutes/upwards");
 const vittoRouter = require("./partnerRoutes/vitto");
+const zypeRouter = require("./partnerRoutes/zype");
 
 router.use("/cashe", casheRouter);
 router.use("/faircent", faircentRouter);
@@ -25,13 +27,15 @@ router.use("/lendingkart", lendingkartRouter);
 router.use("/moneytap", moneytapRouter);
 router.use("/moneyview", moneyviewRouter);
 router.use("/moneywide", moneywideRouter);
+router.use("/mpocket", mpocketRouter);
 router.use("/payme", paymeRouter);
 router.use("/prefr", prefrRouter);
 router.use("/upwards", upwardsRouter);
 router.use("/vitto", vittoRouter);
+router.use("/zype", zypeRouter);
 
 // Welcome
-router.get("/", function(_req, res) {
+router.get("/", function (_req, res) {
     res.send("partnerapi service is running");
 });
 
