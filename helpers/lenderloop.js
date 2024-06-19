@@ -36,11 +36,8 @@ async function main() {
                 isBanned: false,
                 employment: "Salaried",
             })
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: 1 })
                 .limit(1);
-
-            // $elemMatch: { name: { $ne: "Upwards" } },
-            // createdAt: { $gt: new Date("2024-04-05") },
 
             if (leads.length === 0) {
                 console.log("No unsent leads found.");
@@ -84,7 +81,9 @@ async function main() {
                         logToFile(`Response for ${lead.phone}: ${JSON.stringify(response.data)}`);
                     } else {
                         console.error("Failed to send lead:", response.statusText);
-                        logToFile(`Failed to send lead - PAN: ${lead.pan} - Error: ${response.statusText}`);
+                        logToFile(
+                            `Failed to send lead - PAN: ${lead.pan} - Error: ${response.statusText}`,
+                        );
                     }
                 } catch (error) {
                     console.error("Error sending lead:", error.message);

@@ -2,11 +2,14 @@
 const router = require("express").Router();
 const axios = require("axios");
 const { createUser, updateUser } = require("../../middlewares/createUser");
-const domain = "https://nira.temp";
+const domain = "https://p6pr5vasaj.execute-api.us-east-1.amazonaws.com/UAT/partner";
 
 router.post("/", async (req, res) => {
     try {
-        const headers = { "Content-Type": "application/json" };
+        const headers = {
+            "Content-Type": "application/json",
+            "x-api-key": "khKJ5SBDlH3yQQnDGhUmC6gD4oziu7nJ993ywUwm",
+        };
         const data = { uuid: "CM-" + uuidv4().replace(/-/g, ""), ...req.body };
         const user = await createUser(req.body.mobileNo);
         const response = await axios.post(`${domain}/CreateApplication`, data, {
@@ -22,7 +25,7 @@ router.post("/", async (req, res) => {
 
 /* {
     "uuid": "4Cpok4yJse",
-    "partnerIdentifier": "POCHHRMS0001",
+    "partnerIdentifier": "PROP3541",
     "dateOfBirth": "25-10-1986",
     "gender": "Male",
     "maritalStatus": "Single",
