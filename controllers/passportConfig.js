@@ -1,5 +1,5 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
-const User = require("./models/user.model");
+const User = require("../models/user.model");
 const GOOGLE_AUTH_CLIENT_ID = process.env.GOOGLE_AUTH_CLIENT_ID;
 const GOOGLE_AUTH_CLIENT_SECRET = process.env.GOOGLE_AUTH_CLIENT_SECRET;
 
