@@ -50,5 +50,5 @@ async function countDuplicates() {
     process.exit(1);
 }
 
-// mergeDuplicateUsers();
 countDuplicates();
+mergeDuplicateUsers();

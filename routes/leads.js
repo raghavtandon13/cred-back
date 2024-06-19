@@ -1,3 +1,4 @@
+// Imports
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
@@ -6,10 +7,7 @@ const filterLenders = require("../utils/lenderlist.util");
 const fs = require("fs");
 
 router.get("/", function (_req, res) {
-    res.status(200).json({
-        type: "success",
-        message: "leads service is running",
-    });
+    res.status(200).json({ type: "success", message: "leads service is running" });
 });
 
 function checkLeadAuth(req, res, next) {
@@ -34,8 +32,11 @@ router.post("/inject", checkLeadAuth, async function (req, res) {
     const { lead } = req.body;
     try {
         const [dbPromise] = await Promise.allSettled([addtoDB(lead)]);
-        const dbRes = dbPromise.status === "fulfilled" ? dbPromise.value : `Error: ${dbPromise.reason.message}`;
-        const allRes = { status: "success" };
+        const dbRes =
+            dbPromise.status === "fulfilled"
+                ? dbPromise.value
+                : `Error: ${dbPromise.reason.message}`;
+        const allRes = { status: "success", _id: dbRes._id };
         res.status(200).json(allRes);
     } catch (error) {
         console.error("Error during injection:", error);
@@ -45,56 +46,49 @@ router.post("/inject", checkLeadAuth, async function (req, res) {
 
 router.post("/inject2", checkLeadAuth, async function (req, res) {
     const { lead } = req.body;
-    if (lead === undefined || lead.dob === undefined || lead.salary === undefined || lead.pincode === undefined)
+    if (
+        lead === undefined ||
+        lead.dob === undefined ||
+        lead.salary === undefined ||
+        lead.pincode === undefined
+    )
         return res.status(200).json({ status: "Insufficient Data" });
 
     const mainList = await filterLenders(lead.dob, parseInt(lead.salary), parseInt(lead.pincode));
-    const availableLenders = ["Fibe", "Prefr", "Cashe", "Upwards", "MoneyView"];
+    const availableLenders = [
+        "Fibe",
+        "MoneyView",
+        "Cashe" /* "Payme", "LoanTap", "Upwards", "Prefr" */,
+    ];
     const usedLender = await usedLenderList(lead.phone);
 
-    // const lenders = availableLenders
-    //     .filter((lender) => mainList.includes(lender))
-    //     .filter((lender) => !usedLender.includes(lender));
-    //
-    // if (lenders.length === 0) return res.status(200).json({ status: "Insufficient Data" });
+    let lenders = availableLenders
+        .filter((lender) => mainList.includes(lender))
+        .filter((lender) => !usedLender.includes(lender));
 
-    const lenders = ["Payme"];
+    lenders.push("Zype");
+    lenders.push("LoanTap");
+    if (lenders.length === 0) return res.status(200).json({ status: "Insufficient Data" });
+
+    lenders = ["Zype"]; // OVERRIDE
     console.log(lead.phone, " lenders: ", lenders);
 
     const promises = [];
-
-    if (lenders.includes("Fibe")) promises.push(fibeInject(lead));
-    if (lenders.includes("LendingKart")) promises.push(lendingKartInject(lead));
-    if (lenders.includes("Upwards")) promises.push(upwardsInject(lead));
     if (lenders.includes("Cashe")) promises.push(casheInject(lead));
     if (lenders.includes("Faircent")) promises.push(faircentInject(lead));
-    if (lenders.includes("Prefr")) promises.push(prefrInject(lead));
+    if (lenders.includes("Fibe")) promises.push(fibeInject(lead));
+    if (lenders.includes("LendingKart")) promises.push(lendingKartInject(lead));
+    if (lenders.includes("LoanTap")) promises.push(loanTapInject(lead));
+    if (lenders.includes("MPocket")) promises.push(mpocketInject(lead));
+    if (lenders.includes("MoneyTap")) promises.push(moneytapInject(lead));
     if (lenders.includes("MoneyView")) promises.push(moneyviewInject(lead));
     if (lenders.includes("Payme")) promises.push(paymeInject(lead));
+    if (lenders.includes("Prefr")) promises.push(prefrInject(lead));
+    if (lenders.includes("Upwards")) promises.push(upwardsInject(lead));
+    if (lenders.includes("Zype")) promises.push(zypeInject(lead));
 
     try {
         const results = await Promise.allSettled(promises);
-
-        const fibeResult = lenders.includes("Fibe") ? results.shift() : null;
-        const fibeRes = fibeResult
-            ? fibeResult.status === "fulfilled"
-                ? fibeResult.value
-                : `Error: ${fibeResult.reason.message}`
-            : undefined;
-
-        const lkResult = lenders.includes("LendingKart") ? results.shift() : null;
-        const lkRes = lkResult
-            ? lkResult.status === "fulfilled"
-                ? lkResult.value
-                : `Error: ${lkResult.reason.message}`
-            : undefined;
-
-        const upwardsResult = lenders.includes("Upwards") ? results.shift() : null;
-        const upwardsRes = upwardsResult
-            ? upwardsResult.status === "fulfilled"
-                ? upwardsResult.value
-                : `Error: ${upwardsResult.reason.message}`
-            : undefined;
 
         const casheResult = lenders.includes("Cashe") ? results.shift() : null;
         const casheRes = casheResult
@@ -110,11 +104,39 @@ router.post("/inject2", checkLeadAuth, async function (req, res) {
                 : `Error: ${faircentResult.reason.message}`
             : undefined;
 
-        const prefrResult = lenders.includes("Prefr") ? results.shift() : null;
-        const prefrRes = prefrResult
-            ? prefrResult.status === "fulfilled"
-                ? prefrResult.value
-                : `Error: ${prefrResult.reason.message}`
+        const fibeResult = lenders.includes("Fibe") ? results.shift() : null;
+        const fibeRes = fibeResult
+            ? fibeResult.status === "fulfilled"
+                ? fibeResult.value
+                : `Error: ${fibeResult.reason.message}`
+            : undefined;
+
+        const lkResult = lenders.includes("LendingKart") ? results.shift() : null;
+        const lkRes = lkResult
+            ? lkResult.status === "fulfilled"
+                ? lkResult.value
+                : `Error: ${lkResult.reason.message}`
+            : undefined;
+
+        const loanTapResult = lenders.includes("LoanTap") ? results.shift() : null;
+        const loanTapRes = loanTapResult
+            ? loanTapResult.status === "fulfilled"
+                ? loanTapResult.value
+                : `Error: ${loanTapResult.reason.message}`
+            : undefined;
+
+        const mpocketResult = lenders.includes("MPocket") ? results.shift() : null;
+        const mpocketRes = mpocketResult
+            ? mpocketResult.status === "fulfilled"
+                ? mpocketResult.value
+                : `Error: ${mpocketResult.reason.message}`
+            : undefined;
+
+        const moneyTapResult = lenders.includes("MoneyTap") ? results.shift() : null;
+        const moneyTapRes = moneyTapResult
+            ? moneyTapResult.status === "fulfilled"
+                ? moneyTapResult.value
+                : `Error: ${moneyTapResult.reason.message}`
             : undefined;
 
         const mvResult = lenders.includes("MoneyView") ? results.shift() : null;
@@ -131,16 +153,180 @@ router.post("/inject2", checkLeadAuth, async function (req, res) {
                 : `Error: ${pResult.reason.message}`
             : undefined;
 
+        const prefrResult = lenders.includes("Prefr") ? results.shift() : null;
+        const prefrRes = prefrResult
+            ? prefrResult.status === "fulfilled"
+                ? prefrResult.value
+                : `Error: ${prefrResult.reason.message}`
+            : undefined;
+
+        const upwardsResult = lenders.includes("Upwards") ? results.shift() : null;
+        const upwardsRes = upwardsResult
+            ? upwardsResult.status === "fulfilled"
+                ? upwardsResult.value
+                : `Error: ${upwardsResult.reason.message}`
+            : undefined;
+
+        const zypeResult = lenders.includes("Zype") ? results.shift() : null;
+        const zypeRes = zypeResult
+            ? zypeResult.status === "fulfilled"
+                ? zypeResult.value
+                : `Error: ${zypeResult.reason.message}`
+            : undefined;
+
         const allRes = {
-            fibe: fibeRes,
-            lendingKart: lkRes,
-            upwards: upwardsRes,
             cashe: casheRes,
             faircent: faircentRes,
-            prefr: prefrRes,
+            fibe: fibeRes,
+            lendingKart: lkRes,
+            loantap: loanTapRes,
+            moneytap: moneyTapRes,
             moneyview: mvRes,
+            mpokket: mpocketRes,
             payme: pRes,
+            prefr: prefrRes,
+            upwards: upwardsRes,
+            zype: zypeRes,
         };
+
+        logToFile(allRes);
+        res.status(200).json(allRes);
+    } catch (error) {
+        console.error("Error during injection:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post("/inject3", checkLeadAuth, async function (req, res) {
+    const { lenders, lead } = req.body;
+    if (!lenders || lenders.length === 0)
+        return res.status(200).json({ status: "no lenders provided" });
+    if (
+        lead === undefined ||
+        lead.dob === undefined ||
+        lead.salary === undefined ||
+        lead.pincode === undefined
+    )
+        return res.status(200).json({ status: "Insufficient Data" });
+
+    console.log(lead.phone, " lenders: ", lenders);
+
+    const promises = [];
+    if (lenders.includes("Cashe")) promises.push(casheInject(lead));
+    if (lenders.includes("Faircent")) promises.push(faircentInject(lead));
+    if (lenders.includes("Fibe")) promises.push(fibeInject(lead));
+    if (lenders.includes("LendingKart")) promises.push(lendingKartInject(lead));
+    if (lenders.includes("LoanTap")) promises.push(loanTapInject(lead));
+    if (lenders.includes("MPocket")) promises.push(mpocketInject(lead));
+    if (lenders.includes("MoneyTap")) promises.push(moneytapInject(lead));
+    if (lenders.includes("MoneyView")) promises.push(moneyviewInject(lead));
+    if (lenders.includes("Payme")) promises.push(paymeInject(lead));
+    if (lenders.includes("Prefr")) promises.push(prefrInject(lead));
+    if (lenders.includes("Upwards")) promises.push(upwardsInject(lead));
+    if (lenders.includes("Zype")) promises.push(zypeInject(lead));
+
+    try {
+        const results = await Promise.allSettled(promises);
+
+        const casheResult = lenders.includes("Cashe") ? results.shift() : null;
+        const casheRes = casheResult
+            ? casheResult.status === "fulfilled"
+                ? casheResult.value
+                : `Error: ${casheResult.reason.message}`
+            : undefined;
+
+        const faircentResult = lenders.includes("Faircent") ? results.shift() : null;
+        const faircentRes = faircentResult
+            ? faircentResult.status === "fulfilled"
+                ? faircentResult.value
+                : `Error: ${faircentResult.reason.message}`
+            : undefined;
+
+        const fibeResult = lenders.includes("Fibe") ? results.shift() : null;
+        const fibeRes = fibeResult
+            ? fibeResult.status === "fulfilled"
+                ? fibeResult.value
+                : `Error: ${fibeResult.reason.message}`
+            : undefined;
+
+        const lkResult = lenders.includes("LendingKart") ? results.shift() : null;
+        const lkRes = lkResult
+            ? lkResult.status === "fulfilled"
+                ? lkResult.value
+                : `Error: ${lkResult.reason.message}`
+            : undefined;
+
+        const loanTapResult = lenders.includes("LoanTap") ? results.shift() : null;
+        const loanTapRes = loanTapResult
+            ? loanTapResult.status === "fulfilled"
+                ? loanTapResult.value
+                : `Error: ${loanTapResult.reason.message}`
+            : undefined;
+
+        const mpocketResult = lenders.includes("MPocket") ? results.shift() : null;
+        const mpocketRes = mpocketResult
+            ? mpocketResult.status === "fulfilled"
+                ? mpocketResult.value
+                : `Error: ${mpocketResult.reason.message}`
+            : undefined;
+
+        const moneyTapResult = lenders.includes("MoneyTap") ? results.shift() : null;
+        const moneyTapRes = moneyTapResult
+            ? moneyTapResult.status === "fulfilled"
+                ? moneyTapResult.value
+                : `Error: ${moneyTapResult.reason.message}`
+            : undefined;
+
+        const mvResult = lenders.includes("MoneyView") ? results.shift() : null;
+        const mvRes = mvResult
+            ? mvResult.status === "fulfilled"
+                ? mvResult.value
+                : `Error: ${mvResult.reason.message}`
+            : undefined;
+
+        const pResult = lenders.includes("Payme") ? results.shift() : null;
+        const pRes = pResult
+            ? pResult.status === "fulfilled"
+                ? pResult.value
+                : `Error: ${pResult.reason.message}`
+            : undefined;
+
+        const prefrResult = lenders.includes("Prefr") ? results.shift() : null;
+        const prefrRes = prefrResult
+            ? prefrResult.status === "fulfilled"
+                ? prefrResult.value
+                : `Error: ${prefrResult.reason.message}`
+            : undefined;
+
+        const upwardsResult = lenders.includes("Upwards") ? results.shift() : null;
+        const upwardsRes = upwardsResult
+            ? upwardsResult.status === "fulfilled"
+                ? upwardsResult.value
+                : `Error: ${upwardsResult.reason.message}`
+            : undefined;
+
+        const zypeResult = lenders.includes("Zype") ? results.shift() : null;
+        const zypeRes = zypeResult
+            ? zypeResult.status === "fulfilled"
+                ? zypeResult.value
+                : `Error: ${zypeResult.reason.message}`
+            : undefined;
+
+        const allRes = {
+            cashe: casheRes,
+            faircent: faircentRes,
+            fibe: fibeRes,
+            lendingKart: lkRes,
+            loantap: loanTapRes,
+            moneytap: moneyTapRes,
+            moneyview: mvRes,
+            mpokket: mpocketRes,
+            payme: pRes,
+            prefr: prefrRes,
+            upwards: upwardsRes,
+            zype: zypeRes,
+        };
+
         logToFile(allRes);
         res.status(200).json(allRes);
     } catch (error) {
@@ -293,16 +479,13 @@ async function upwardsInject(lead) {
     const apiUrl1 = "https://credmantra.com/api/v1/partner-api/upwards/create";
     const apiUrl2 = "https://credmantra.com/api/v1/partner-api/upwards/complete";
     const apiUrl3 = "https://credmantra.com/api/v1/partner-api/upwards/decision";
-    // const apiUrl4 = "https://credmantra.com/api/v1/partner-api/upwards/cibil";
 
     try {
         const upwardsRes1 = await axios.post(apiUrl1, upwardsReq);
-        if (upwardsRes1.data.data.loan_data.customer_id && upwardsRes1.data.data.loan_data.loan_id) {
-            // const upwardsRes4 = await axios.post(apiUrl4, {
-            //     loan_id: upwardsRes1.data.data.loan_data.loan_id,
-            //     customer_id: upwardsRes1.data.data.loan_data.customer_id,
-            // });
-            // console.log("res4: ", upwardsRes4.data);
+        if (
+            upwardsRes1.data.data.loan_data.customer_id &&
+            upwardsRes1.data.data.loan_data.loan_id
+        ) {
             const upwardsRes2 = await axios.post(apiUrl2, {
                 loan_id: upwardsRes1.data.data.loan_data.loan_id,
                 customer_id: upwardsRes1.data.data.loan_data.customer_id,
@@ -427,42 +610,40 @@ async function faircentInject(lead) {
     } else {
         return "Duplicate";
     }
-    const faircentRes = await axios.post(apiUrl, faircentReq);
-    return faircentRes.data;
 }
 
-// async function moneytapInject(lead) {
-//   const moneytapReq = {
-//     mobilenumber: lead.phone || "",
-//     profile: {
-//       firstname: lead.firstName || "",
-//       lastname: lead.lastName || "",
-//       dob: lead.dob,
-//       profession: "Salaried",
-//       address1: "",
-//       address2: "",
-//       landmark: "",
-//       city: lead.city || "",
-//       pincode: lead.pincode || "",
-//       maritalstatus: "",
-//     },
-//     finance: {
-//       pan: lead.pan ? lead.pan.toUpperCase() : "",
-//     },
-//     employeedetails: {
-//       employername: lead.empName || "",
-//       officeaddress: "",
-//       officeCity: "",
-//       officepincode: lead.pincode || "",
-//       salary: Math.ceil(lead.salary) || 0,
-//     },
-//     consent: true,
-//     consentDatetime: new Date().toISOString(),
-//   };
-//   const apiUrl = "https://credmantra.com/api/v1/partner-api/moneytap";
-//   const moneytapRes = await axios.post(apiUrl, moneytapReq);
-//   return moneytapRes.data;
-// }
+async function moneytapInject(lead) {
+    const moneytapReq = {
+        mobilenumber: lead.phone || "",
+        profile: {
+            firstname: lead.firstName || "",
+            lastname: lead.lastName || "",
+            dob: lead.dob,
+            profession: "Salaried",
+            address1: "",
+            address2: "",
+            landmark: "",
+            city: lead.city || "",
+            pincode: lead.pincode || "",
+            maritalstatus: "",
+        },
+        finance: {
+            pan: lead.pan ? lead.pan.toUpperCase() : "",
+        },
+        employeedetails: {
+            employername: lead.empName || "",
+            officeaddress: "",
+            officeCity: "",
+            officepincode: lead.pincode || "",
+            salary: Math.ceil(lead.salary) || 0,
+        },
+        consent: true,
+        consentDatetime: new Date().toISOString(),
+    };
+    const apiUrl = "https://credmantra.com/api/v1/partner-api/moneytap";
+    const moneytapRes = await axios.post(apiUrl, moneytapReq);
+    return moneytapRes.data;
+}
 
 async function prefrInject(lead) {
     const prefrDedupeReq = {
@@ -471,9 +652,6 @@ async function prefrInject(lead) {
         personalEmailId: lead.email,
         productName: "pl",
     };
-    // const prefrdedupeUrl = "https://credmantra.com/api/v1/partner-api/prefr/dedupe";
-    // const prefrStartUrl = "https://credmantra.com/api/v1/partner-api/prefr/start2";
-    // const prefrDetailsUrl = "https://credmantra.com/api/v1/partner-api/prefr/details";
     const prefrdedupeUrl = "http://localhost:3000/api/v1/partner-api/prefr/dedupe";
     const prefrStartUrl = "http://localhost:3000/api/v1/partner-api/prefr/start2";
     const prefrDetailsUrl = "http://localhost:3000/api/v1/partner-api/prefr/details";
@@ -611,7 +789,10 @@ async function paymeInject(lead) {
     }
 
     try {
-        const pRes4 = await axios.post(apiUrl4, { phone_number: pReq3.phone_number, token: p2Res.data.data.token });
+        const pRes4 = await axios.post(apiUrl4, {
+            phone_number: pReq3.phone_number,
+            token: p2Res.data.data.token,
+        });
         console.log(pRes4.data);
         p4 = pRes4.data;
     } catch (error) {
@@ -622,6 +803,120 @@ async function paymeInject(lead) {
         cibil: p3,
         limit: p4.data,
     };
+}
+
+async function loanTapInject(lead) {
+    console.log("lead: \n", lead);
+    try {
+        const comman = {
+            full_name: lead.firstName + " " + lead.lastName,
+            personal_email: lead.email,
+            mobile_number: lead.phone,
+            pan_card: lead.pan,
+            dob: lead.dob,
+            gender: lead.gender
+                ? lead.gender[0].toUpperCase() + lead.gender.slice(1).toLowerCase()
+                : "Male",
+            marital_status: "single",
+            job_type: lead.employment ? lead.employment.toLowerCase() : "self-employed",
+            home_addr_line1: "addr line 1",
+            home_addr_line2: "addr line 2",
+            home_city: lead.city,
+            home_zipcode: lead.pincode,
+            req_amount: "200000",
+        };
+        let specfic = {};
+        if (lead.employment === "Salaried") {
+            specfic = {
+                fixed_income: lead.income || "30000",
+                employer_name: lead.empName || "COMPANY",
+                office_addr_line1: "addr line 1",
+                office_addr_line2: "addr line 2",
+                office_city: lead.city,
+                office_zipcode: lead.pincode,
+            };
+        } else {
+            specfic = {
+                business_ownership_type: "owned",
+                business_name: lead.empName || "COMPANY",
+                business_addr_line1: "addr line 1",
+                business_addr_line2: "addr line 1",
+                business_zipcode: lead.pincode,
+                business_city: lead.pincode,
+                business_monthly_sales: lead.income || "30000",
+                loan_city: lead.city,
+                req_tenure: 60,
+            };
+        }
+        const loanTapReq = { add_application: { ...comman, ...specfic } };
+        console.log(loanTapReq);
+        const apiUrl = "https://credmantra.com/api/v1/partner-api/loantap";
+        const loanTapRes = await axios.post(apiUrl, loanTapReq);
+        console.log(loanTapRes.data);
+        return (
+            loanTapRes.data.add_application.answer || {
+                code: loanTapRes.data.add_application.error.error_code,
+                args: loanTapRes.data.add_application.error.errors,
+            }
+        );
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function mpocketInject(lead) {
+    const dedupeURL = "https://credmantra.com/api/v1/partner-api/mpocket/dedupe";
+    const leadURL = "https://credmantra.com/api/v1/partner-api/mpocket/lead";
+    const statusURL = "https://credmantra.com/api/v1/partner-api/mpocket/status";
+
+    const dedupeReq = { mobileNumber: lead.phone, email: lead.email };
+    const dedupeRes = await axios.post(dedupeURL, dedupeReq);
+    console.log("Dedupe: ", dedupeRes);
+    if (dedupeRes.data.message !== "New user") return "Duplicate";
+
+    const leadReq = {
+        email_id: lead.email,
+        mobile_no: lead.phone,
+        full_name: lead.firstName + " " + lead.lastName,
+        date_of_birth: lead.dob,
+        gender: lead.gender.toLowerCase(),
+        profession: "salaried",
+    };
+    const leadRes = await axios.post(leadURL, leadReq);
+    console.log("Lead: ", leadRes);
+    if (leadRes.data.message !== "Data has been accepted") return "Rejected";
+
+    const statusReq = { request_id: leadRes.data.data.request_id };
+    const statusRes = await axios.post(statusURL, statusReq);
+    console.log("Status: ", statusRes);
+    return statusRes.data.data; // [0]
+}
+
+async function zypeInject(lead) {
+    const zypeDedupeURL = "http://localhost:3000/api/v1/partner-api/zype/dedupe";
+    const zypeOfferURL = "http://localhost:3000/api/v1/partner-api/zype/offer";
+
+    const zypeDedupeReq = { mobileNumber: lead.phone, panNumber: lead.pan };
+    const zypeDedupeRes = await axios.post(zypeDedupeURL, zypeDedupeReq);
+
+    if (zypeDedupeRes.data.status === "ACCEPT") {
+        const zypeOfferReq = {
+            mobileNumber: lead.phone,
+            email: lead.email,
+            panNumber: lead.pan,
+            name: lead.firstName + " " + lead.lastName,
+            dob: lead.dob,
+            employmentType: "salaried",
+            income: parseInt(lead.salary) || 30000,
+            orgName: lead.empName || "COMPANY",
+            bureauType: 3,
+        };
+
+        const zypeOfferRes = await axios.post(zypeOfferURL, zypeOfferReq);
+        return zypeOfferRes.data;
+    }
+
+    return zypeDedupeRes.data;
 }
 
 function logToFile(message) {

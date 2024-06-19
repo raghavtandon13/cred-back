@@ -20,6 +20,7 @@ const allowlist = [
     "http://localhost:3000",
     "https://credmantra.com",
     "https://cred-front.vercel.app",
+    "https://cred-db.vercel.app",
 ];
 
 app.use(
@@ -45,6 +46,7 @@ const googleAuthRouter = require("./routes/google_auth");
 const partnerRouter = require("./routes/partner");
 const partnerApi = require("./routes/partnerApi");
 const leads = require("./routes/leads");
+const crm = require("./routes/crm");
 
 app.use("/api" + API_VERSION + "/", indexRouter);
 app.use("/api" + API_VERSION + "/users", usersRouter);
@@ -53,6 +55,7 @@ app.use("/api" + API_VERSION + "/auth/google", googleAuthRouter);
 app.use("/api" + API_VERSION + "/partner", partnerRouter);
 app.use("/api" + API_VERSION + "/partner-api", partnerApi);
 app.use("/api" + API_VERSION + "/leads", leads);
+app.use("/api" + API_VERSION + "/crm", crm);
 
 // Error Handling Middleware
 app.use(function (_req, _res, next) {

@@ -8,8 +8,14 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
 
 async function totalCount() {
     const countMoneyTapEntries = await User.countDocuments({ partner: "MoneyTap" });
-    const moneyTapEntriesFalse = await User.countDocuments({ partner: "MoneyTap", partnerSent: false });
-    const moneyTapEntriesTrue = await User.countDocuments({ partner: "MoneyTap", partnerSent: true });
+    const moneyTapEntriesFalse = await User.countDocuments({
+        partner: "MoneyTap",
+        partnerSent: false,
+    });
+    const moneyTapEntriesTrue = await User.countDocuments({
+        partner: "MoneyTap",
+        partnerSent: true,
+    });
     const notBanned = await User.countDocuments({
         partner: "MoneyTap",
         partnerSent: false,
@@ -22,9 +28,28 @@ async function totalCount() {
     console.log("MoneyTap notBanned: ", notBanned);
 }
 
+async function newCount() {
+    const total = await User.countDocuments({ partner: "MoneyTap" });
+    const moneyTapEntriesTrue = await User.countDocuments({
+        partner: "MoneyTap",
+        partnerSent: true,
+    });
+    const noAccounts = await User.countDocuments({
+        partner: "MoneyTap",
+        partnerSent: true,
+        $or: [{ accounts: { $exists: false } }, { accounts: { $size: 0 } }],
+    });
+
+    console.log("MoneyTap Total: ", total);
+    console.log("MoneyTap Sent: ", moneyTapEntriesTrue);
+    console.log("No Accounts: ", noAccounts);
+}
+
 async function fibeCount() {
     const count = await User.countDocuments({ accounts: { $elemMatch: { name: "Fibe" } } });
-    const count1 = await User.countDocuments({ accounts: { $elemMatch: { name: "Fibe", sent: { $exists: true } } } });
+    const count1 = await User.countDocuments({
+        accounts: { $elemMatch: { name: "Fibe", sent: { $exists: true } } },
+    });
     console.log(count);
     console.log(count1);
     process.exit(1);
@@ -61,4 +86,5 @@ async function fibeClean() {
 
 // fibeCount();
 // fibeClean();
-totalCount();
+// totalCount();
+newCount();

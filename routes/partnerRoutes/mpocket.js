@@ -3,8 +3,11 @@ const router = require("express").Router();
 const axios = require("axios");
 const { createUser, addToUser } = require("../../middlewares/createUser");
 const User = require("../../models/user.model");
-const domain = "stg-api.mpkt.in";
-const headers = { "Content-Type": "application/json", "api-key": "59D8AB0B311246C58001D9363D35A" };
+const domain = "api.mpkt.in";
+const headers = { "Content-Type": "application/json", "api-key": "3BB5E7A7E44345988BC9111F4C975 " };
+
+// const domain = "stg-api.mpkt.in";
+// const headers = { "Content-Type": "application/json", "api-key": "59D8AB0B311246C58001D9363D35A" };
 
 router.post("/dedupe", async (req, res) => {
     try {
@@ -14,7 +17,7 @@ router.post("/dedupe", async (req, res) => {
             mobileNumber: Buffer.from(mobileNumber).toString("base64"),
         };
         console.log(data);
-        const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/dedupe/chec`, data, {
+        const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/dedupe/check`, data, {
             headers: headers,
         });
         res.json(response.data);

@@ -17,11 +17,13 @@ function logToFile(message) {
     });
 }
 
+// const API_URL = "https://credmantra.com/api/v1/leads/inject2";
+const API_URL = "http://localhost:3000/api/v1/leads/inject2";
+const MONGODB_URI = process.env.MONGODB_URI;
+
 async function main() {
-    const API_URL = "https://credmantra.com/api/v1/leads/inject2";
-    // const API_URL = "http://localhost:3000/api/v1/leads/inject2";
     try {
-        const MONGODB_URI = process.env.MONGODB_URI;
+        mongoose.set("strictQuery", false);
         mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
         console.log("Connected to MongoDB successfully.");
@@ -32,17 +34,18 @@ async function main() {
                 partner: "MoneyTap",
                 partnerSent: false,
                 isBanned: false,
-                // $elemMatch: { name: { $ne: "Upwards" } },
-                // createdAt: { $gt: new Date("2024-04-05") },
+                employment: "Salaried",
             })
-                .sort({ createdAt:  -1 })
+                .sort({ createdAt: -1 })
                 .limit(1);
+
+            // $elemMatch: { name: { $ne: "Upwards" } },
+            // createdAt: { $gt: new Date("2024-04-05") },
 
             if (leads.length === 0) {
                 console.log("No unsent leads found.");
                 leadFound = false;
                 process.exit(1);
-                break;
             }
 
             const leadPromises = leads.map(async (lead) => {
@@ -62,6 +65,7 @@ async function main() {
                             pan: lead.pan,
                             empName: lead.company_name,
                             salary: lead.income,
+                            employment: lead.employment,
                         },
                     };
 

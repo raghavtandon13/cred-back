@@ -1,5 +1,4 @@
 const User = require("../models/user.model");
-const { PHONE_NOT_FOUND_ERR, PHONE_ALREADY_EXISTS_ERR, USER_NOT_FOUND_ERR, INCORRECT_OTP_ERR } = require("../errors");
 const { createJwtToken } = require("../utils/token.util");
 const { generateOTP, fast2sms } = require("../utils/otp.util");
 const showError = require("../utils/errorBox");
@@ -18,7 +17,7 @@ exports.createNewUser = async (req, res, next) => {
         } = req.body;
 
         if (await User.findOne({ phone })) {
-            return next({ status: 400, message: PHONE_ALREADY_EXISTS_ERR });
+            return next({ status: 400, message: "phone already exists" });
         }
 
         const role = phone === process.env.ADMIN_PHONE ? "ADMIN" : "USER";
@@ -130,7 +129,7 @@ exports.loginWithPhoneOtp = async (req, res, next) => {
         const user = await User.findOne({ phone });
 
         if (!user) {
-            next({ status: 400, message: PHONE_NOT_FOUND_ERR });
+            next({ status: 400, message: "phone not found" });
             return;
         }
 
@@ -179,7 +178,7 @@ exports.resendOtp = async (req, res, next) => {
         const user = await User.findOne({ phone });
 
         if (!user) {
-            next({ status: 400, message: PHONE_NOT_FOUND_ERR });
+            next({ status: 400, message: "phone not found" });
             return;
         }
 
@@ -214,12 +213,12 @@ exports.verifyPhoneOtp = async (req, res, next) => {
         const user = await User.findOne({ phone });
         //console.log(user, phone, otp);
         if (!user) {
-            next({ status: 400, message: USER_NOT_FOUND_ERR });
+            next({ status: 400, message: "user not found" });
             return;
         }
 
         if (user.phoneOtp !== otp || user.phoneOtpExpire < Date.now()) {
-            next({ status: 400, message: INCORRECT_OTP_ERR });
+            next({ status: 400, message: "incorrect opt" });
             return;
         }
 

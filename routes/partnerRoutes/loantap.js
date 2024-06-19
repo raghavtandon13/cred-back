@@ -1,67 +1,46 @@
 // Imports
 const router = require("express").Router();
 const axios = require("axios");
-const { createUser, addToUser } = require("../../middlewares/createUser");
-const domain = "domain.com";
-const headers = { "Content-Type": "application/json", "api-key": apikey };
+const { v4: uuidv4 } = require("uuid");
+const { createUser, updateUser } = require("../../middlewares/createUser");
+const domain = "https://loantap.in";
+const uniquePartnerKey = Buffer.from("r3ib59DMkys14ipYeY4dCFkJExTQatiI", "utf8");
+const crypto = require("crypto");
 
-router.post("/mpocket/dedupe", async (req, res) => {
-    console.log(body);
+router.post("/", async (req, res) => {
     try {
-        const { mobileNumber, email } = req.body;
-        const data = {
-            email: Buffer.from(email).toString("base64"),
-            mobileNumber: Buffer.from(mobileNumber).toString("base64"),
+        const apikey = generateXApiAuth(uniquePartnerKey);
+        const headers = {
+            "Content-Type": "application/json",
+            "X-API-AUTH": apikey,
+            "PARTNER-ID": "creadmantra",
+            "REQ-PRODUCT-ID": "It-personal-term-loan-reducing",
         };
-        const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/dedupe/chec`, data, {
-            headers: headers,
-        });
+        const data = {
+            add_application: {
+                is_consent: "CM-" + uuidv4().replace(/-/g, ""),
+                ...req.body.add_application,
+            },
+        };
+        const user = await createUser(req.body.add_application.mobile_number);
+        const response = await axios.post(`${domain}/v1-application/transact`, data, { headers: headers });
+        await updateUser(user, { name: "LoanTap", ...response.data.add_application.answer });
         res.json(response.data);
     } catch (error) {
-        console.error("Error at mpocket/dedupe:", error.message);
+        console.error("Error at loantap:", error.message);
         res.status(error.response.status).json({ error: error.response.data });
     }
 });
 
-router.post("/mpocket/lead", async (req, res) => {
-    try {
-        const data = req.body;
-        const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/user`, data, {
-            headers: headers,
-        });
-        res.json(response.data);
-    } catch (error) {
-        console.error("Error at mpocket/lead:", error.message);
-        res.status(error.response.status).json({ error: error.response.data });
-    }
-});
-
-router.post("/mpocket/bulk", async (req, res) => {
-    try {
-        const data = req.body;
-        const response = await axios.post(`https://${domain}/acquisition-affiliate/v1/bulk/user`, data, {
-            headers: headers,
-        });
-        res.json(response.data);
-    } catch (error) {
-        console.error("Error at mpocket/bulk:", error.message);
-        res.status(error.response.status).json({ error: error.response.data });
-    }
-});
-
-router.post("/mpocket/status", async (req, res) => {
-    try {
-        const { request_id } = req.body;
-        const response = await axios.post(
-            `https://${domain}/acquisition-affiliate/v1/user?request_id=${request_id}`,
-            data,
-            { headers: headers },
-        );
-        res.json(response.data);
-    } catch (error) {
-        console.error("Error at mpocket/status:", error.message);
-        res.status(error.response.status).json({ error: error.response.data });
-    }
-});
+function generateXApiAuth(uniquePartnerKey) {
+    const epochTime = Math.floor(Date.now() / 1000);
+    console.log(epochTime);
+    const iv = Buffer.alloc(16, 0);
+    const cipher = crypto.createCipheriv("aes-256-cbc", uniquePartnerKey, iv);
+    let encrypted = cipher.update(epochTime.toString(), "utf8", "base64");
+    encrypted += cipher.final("base64");
+    console.log(encrypted);
+    return encrypted;
+}
 
 module.exports = router;

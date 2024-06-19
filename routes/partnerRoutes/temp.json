@@ -1,0 +1,16 @@
+{
+    "pan": "HJKPA0404A",
+    "first_name": "Rick",
+    "last_name": "Morty",
+    "date_of_birth": "1993-12-20",
+    "employment_type": "salaried",
+    "gender": "male",
+    "monthly_income": 45000,
+    "postal_code": "421201",
+    "phone": "+919767283302",
+    "email": "subsifellfor@myspace.com",
+    "terms_accepted": true,
+    "phone_verified": true,
+    "ckyc_consent": true, // optional field
+    "user_reason": "RENOVATION"
+}
