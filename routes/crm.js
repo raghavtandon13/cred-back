@@ -78,8 +78,6 @@ async function getData(dates) {
             },
         });
 
-        console.log("pipeline")
-        console.log(pipeline)
         const result = await User.aggregate(pipeline);
         const formatNumber = (number) => {
             return new Intl.NumberFormat("en-IN").format(number);
@@ -106,9 +104,7 @@ async function getData(dates) {
 
 router.post("/stats", async function (req, res) {
     const { dates } = req.body;
-    console.log(dates);
     const data = await getData(dates);
-    console.log(data);
     res.status(200).json({ data });
 });
 
