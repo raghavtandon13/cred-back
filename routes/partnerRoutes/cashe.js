@@ -10,7 +10,6 @@ const urlCashe = "https://partners.cashe.co.in";
 
 function generateCheckSum(data) {
     const dataStr = JSON.stringify(data);
-    //const encryptedStr = CryptoJS.HmacSHA1(dataStr,"_bz_q]o2T,#(wM`D");
     const encryptedStr = CryptoJS.HmacSHA1(dataStr, "(!4Zb'4'M^0bSoyk");
     const checkSumValue = CryptoJS.enc.Base64.stringify(encryptedStr);
     return checkSumValue;
@@ -39,6 +38,7 @@ router.post("/cashe/checkDuplicateLead", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/cashe/preApproval", async (req, res) => {
     try {
         const c2 = generateCheckSum(req.body);
@@ -63,6 +63,7 @@ router.post("/cashe/preApproval", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/cashe/createCustomer", async (req, res) => {
     try {
         const c3 = generateCheckSum(req.body);
@@ -83,6 +84,7 @@ router.post("/cashe/createCustomer", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/cashe/salary", async (req, res) => {
     try {
         const c4 = generateCheckSum(data);
@@ -98,6 +100,7 @@ router.post("/cashe/salary", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/cashe/status", async (req, res) => {
     try {
         const c5 = generateCheckSum(data);
@@ -113,6 +116,7 @@ router.post("/cashe/status", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/upload", upload.single("file"), async (req, res) => {
     try {
         const partnerName = req.body.partner_name;

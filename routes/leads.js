@@ -353,6 +353,7 @@ async function addtoDB(lead) {
             income: lead.salary,
             partner: "MoneyTap",
             partnerSent: false,
+            consent: lead.consent || formatDateTime(new Date()),
         });
         user = await newUser.save();
     } else {
@@ -400,7 +401,7 @@ async function fibeInject(lead) {
             salary: Math.ceil(lead.salary) || 21000,
         },
         consent: true,
-        consentDatetime: new Date().toISOString(),
+        consentDatetime: lead.consent || formatDateTime(new Date()),
     };
     const apiUrl = "https://credmantra.com/api/v1/partner-api/fibe";
     const fibeRes = await axios.post(apiUrl, fibeReq);
@@ -917,6 +918,16 @@ async function zypeInject(lead) {
     }
 
     return zypeDedupeRes.data;
+}
+
+function formatDateTime(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 function logToFile(message) {

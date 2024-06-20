@@ -5,8 +5,8 @@ const User = require("../../models/user.model");
 const { v4: uuidv4 } = require("uuid");
 const { createUser, addToUser } = require("../../middlewares/createUser");
 const host = "https://api.creditvidya.com";
-
 const apikey = "fb49d37942c6687e1e74d424d1ab99e6";
+
 router.post("/prefr/dedupe", async (req, res) => {
     console.log("Revieved request at /prefr/dedupe");
     const body = req.body;
@@ -84,6 +84,7 @@ router.post("/prefr/webhook", async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 router.post("/prefr/start2", async (req, res) => {
     console.log("Revieved request at /prefr/start");
     const body = req.body;
