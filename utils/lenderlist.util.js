@@ -10,7 +10,7 @@ async function filterLenders(dob, income, pincode) {
     const data = JSON.parse(jsonData);
     const eligibleLenders = [
         { name: "Fibe", minAge: 19, maxAge: 55, minSalary: 15000 },
-        { name: "Upwards", minAge: 21, maxAge: 55, minSalary: 18000 },
+        { name: "Upwards", minAge: 21, maxAge: 55, minSalary: 30000 },
         { name: "Faircent", minAge: 25, maxAge: 55, minSalary: 25000 },
         { name: "Cashe", minAge: 18, maxAge: 60, minSalary: 25000 },
         { name: "Finnable", minAge: 18, maxAge: 60, minSalary: 15000 },

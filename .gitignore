@@ -8,4 +8,5 @@ dist/
 package-lock.json
 .env
 *.txt
-curl/
+curls/
+ecosystem.config.js

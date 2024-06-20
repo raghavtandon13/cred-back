@@ -14,7 +14,11 @@ const userSchema = new Schema(
         state: { type: String, trim: true },
         category: { type: String, trim: true },
         gender: { type: String, trim: true },
-        employment: { type: String, enum: ["Salaried", "Self-employed", "No-employment"], default: "Salaried" },
+        employment: {
+            type: String,
+            enum: ["Salaried", "Self-employed", "No-employment"],
+            default: "Salaried",
+        },
         company_name: { type: String, trim: true },
         income: { type: String, trim: true },
         loan_required: { type: String, trim: true },
@@ -28,11 +32,8 @@ const userSchema = new Schema(
         detailsFilled: { type: Boolean, default: false },
         eformFilled: { type: Boolean, default: false },
         isBanned: { type: Boolean, default: false },
-        google: {
-            id: { type: String },
-            email: { type: String },
-            name: { type: String },
-        },
+        google: { id: { type: String }, email: { type: String }, name: { type: String } },
+        consent: { type: String },
     },
     { timestamps: true },
 );
